@@ -1,0 +1,150 @@
+<aside
+  class="rh-sidebar flex flex-col self-stretch bg-white border-r border-gray-200 transition-all duration-300 shrink-0 shadow-sm min-h-full"
+  [class.w-64]="!collapsed()"
+  [class.w-20]="collapsed()"
+>
+  <!-- Profile Section -->
+  <div class="p-4 border-b border-gray-100">
+    <div class="flex items-center gap-3">
+      <div class="relative shrink-0">
+        <button
+          (click)="toggleCollapse()"
+          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#25509d] text-white flex items-center justify-center hover:bg-[#1e3d7a] transition-colors z-10"
+          [title]="collapsed() ? 'Expand' : 'Collapse'"
+        >
+          <svg
+            class="w-3.5 h-3.5 transition-transform"
+            [class.rotate-180]="collapsed()"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        @if (avatarUrl) {
+          <img
+            [src]="avatarUrl"
+            [alt]="getDisplayName()"
+            class="w-14 h-14 rounded-full object-cover border-2 border-[#99cfbd]/30"
+          />
+        } @else {
+          <div
+            class="w-14 h-14 rounded-full bg-gradient-to-br from-[#25509d] to-[#99cfbd] flex items-center justify-center text-white font-bold text-lg"
+          >
+            {{ getDisplayName().charAt(0) }}
+          </div>
+        }
+        <button
+          class="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+        >
+          <svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+            />
+          </svg>
+        </button>
+      </div>
+      @if (!collapsed()) {
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold text-gray-900 truncate">{{ getDisplayName() }}</p>
+          <p class="text-xs text-gray-500 truncate">{{ getDisplayRole() }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Search -->
+  @if (!collapsed()) {
+    <div class="p-3">
+      <div class="relative">
+        <input
+          type="search"
+          placeholder="Search"
+          class="w-full pl-3 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#25509d]/30 focus:border-[#25509d]"
+        />
+        <svg
+          class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
+    </div>
+  }
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto py-2">
+    @for (item of navItems; track item.label) {
+      @if (item.children) {
+        <!-- Accordion group -->
+        <div class="mx-2">
+          <button
+            type="button"
+            (click)="toggleGroup(item.label)"
+            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#25509d]/5 hover:text-[#25509d] transition-colors rounded-lg"
+            [class.bg-[#25509d]]="isGroupOpen(item.label)"
+            [class.text-white]="isGroupOpen(item.label)"
+            [title]="collapsed() ? item.label : ''"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.iconPath" />
+            </svg>
+            @if (!collapsed()) {
+              <span class="truncate flex-1 text-left">{{ item.label }}</span>
+              <svg
+                class="w-4 h-4 shrink-0 transition-transform duration-200"
+                [class.rotate-180]="isGroupOpen(item.label)"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            }
+          </button>
+          @if (!collapsed() && isGroupOpen(item.label)) {
+            <div class="mt-1 ml-3 border-l-2 border-[#25509d]/20 pl-3 space-y-0.5">
+              @for (child of item.children; track child.route) {
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="!bg-[#25509d]/10 !text-[#25509d] !font-semibold"
+                  class="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-[#25509d]/5 hover:text-[#25509d] transition-colors"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0 [.router-link-active_&]:bg-[#25509d]"></span>
+                  <span class="truncate">{{ child.label }}</span>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Regular link -->
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="!bg-[#25509d] !text-white"
+          (click)="closeGroup()"
+          class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#25509d]/5 hover:text-[#25509d] transition-colors mx-2 rounded-lg [&.router-link-active]:hover:!bg-[#25509d] [&.router-link-active]:hover:!text-white"
+          [title]="collapsed() ? item.label : ''"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.iconPath" />
+          </svg>
+          @if (!collapsed()) {
+            <span class="truncate">{{ item.label }}</span>
+          }
+        </a>
+      }
+    }
+  </nav>
+</aside>

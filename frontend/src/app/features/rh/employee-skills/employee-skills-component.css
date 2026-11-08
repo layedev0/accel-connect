@@ -1,0 +1,15 @@
+.employee-skills {
+  width: 100%;
+  min-width: 0;
+}
+
+.employee-skills table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: separate;
+}
+
+.employee-skills th,
+.employee-skills td {
+  white-space: nowrap;
+}

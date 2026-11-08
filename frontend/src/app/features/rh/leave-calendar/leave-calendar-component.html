@@ -1,0 +1,142 @@
+<div class="p-5 sm:p-6">
+  <!-- Header -->
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+    <div>
+      <h1 class="text-xl font-bold text-gray-800 tracking-tight">Calendrier</h1>
+      <p class="mt-1 text-sm text-gray-500">
+        Vue d'ensemble des congés, absences et jours fériés de l'équipe
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="goToToday()"
+      class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50">
+      Aujourd'hui
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <!-- Month bar + legend -->
+    <div class="flex flex-wrap items-center justify-between gap-4 px-4 sm:px-5 py-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="previousMonth()" aria-label="Mois précédent"
+          class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-[#25509d] hover:bg-gray-50">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 class="text-base font-bold text-[#25509d] min-w-[130px] text-center">{{ monthLabel() }}</h2>
+        <button type="button" (click)="nextMonth()" aria-label="Mois suivant"
+          class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-[#25509d] hover:bg-gray-50">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600">
+        @for (item of legendItems(); track item.label) {
+          <span class="inline-flex items-center gap-1.5">
+            <i class="w-3 h-3 rounded-[3px]" [style.background]="item.color"></i>{{ item.label }}
+          </span>
+        }
+        <span class="inline-flex items-center gap-1.5">
+          <i class="w-3 h-3 rounded-full bg-slate-500"></i>Absence
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <i class="w-3 h-3 rounded-[3px] bg-red-50 ring-1 ring-red-200"></i>Jour férié
+        </span>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="flex items-center justify-center h-64">
+        <div class="w-8 h-8 border-4 border-[#25509d] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else {
+      <!-- Weekday header -->
+      <div class="cal-dow">
+        @for (d of weekdays; track d; let i = $index) {
+          <span [class.we]="i >= 5">{{ d }}</span>
+        }
+      </div>
+
+      <!-- Weeks -->
+      <div class="cal-grid">
+        @for (week of weeks(); track $index) {
+          <div class="cal-week">
+            @for (day of week.days; track day.iso) {
+              <div class="cal-day" [class.we]="day.isWeekend" [class.out]="!day.inMonth">
+                <div class="cal-daynum">
+                  <span [class.today]="day.isToday">{{ day.day }}</span>
+                </div>
+                <!-- reserve vertical space for the leave bars overlay -->
+                <div [style.height.px]="week.laneCount * laneHeight"></div>
+
+                @if (day.holiday) {
+                  <span class="cal-ferie">
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1-6.3-4.6L5.7 21 8 14 2 9.4h7.6z"/></svg>
+                    {{ day.holiday.name }}
+                  </span>
+                }
+
+                @for (abs of day.absences.slice(0, 2); track abs.id) {
+                  <button type="button" class="cal-abs" (click)="openAbsence(abs, $event)">
+                    <span class="ci">{{ (abs.employeeName || '?').charAt(0) }}</span>
+                    <span class="nm">{{ abs.employeeName }}</span>
+                    <em>· {{ time(abs.startTime) }}</em>
+                  </button>
+                }
+                @if (day.absences.length > 2) {
+                  <span class="cal-more">+{{ day.absences.length - 2 }} autre(s)</span>
+                }
+              </div>
+            }
+
+            <!-- Leave bars overlay -->
+            <div class="cal-bars">
+              @for (bar of week.bars; track bar.leave.id) {
+                <button
+                  type="button"
+                  class="cal-bar"
+                  [class.cont-l]="bar.continuesLeft"
+                  [class.cont-r]="bar.continuesRight"
+                  [style.left]="bar.leftStyle"
+                  [style.width]="bar.widthStyle"
+                  [style.top.px]="bar.top"
+                  [style.background]="bar.color"
+                  (click)="openLeave(bar, $event)">
+                  @if (!bar.continuesLeft) {
+                    <span class="av">{{ bar.initials }}</span>
+                  }
+                  <span class="nm">{{ bar.label }}</span>
+                  @if (bar.isEnd) {
+                    <span class="end">fin</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Read-only details popover -->
+@if (popover(); as p) {
+  <div class="cal-popover" [style.left.px]="p.x" [style.top.px]="p.y" (clickOutside)="closePopover()">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="w-2.5 h-2.5 rounded-full" [style.background]="p.color"></span>
+      <span class="font-semibold text-gray-800 text-sm">{{ p.title }}</span>
+    </div>
+    <dl class="text-xs text-gray-600 space-y-1.5">
+      <div class="flex justify-between gap-3">
+        <dt class="text-gray-400">Type</dt><dd class="text-gray-700 text-right">{{ p.typeLabel }}</dd>
+      </div>
+      <div class="flex justify-between gap-3">
+        <dt class="text-gray-400">Dates</dt><dd class="text-gray-700 text-right">{{ p.dateLabel }}</dd>
+      </div>
+      <div class="flex justify-between items-center gap-3">
+        <dt class="text-gray-400">Statut</dt>
+        <dd><span class="px-2 py-0.5 rounded-full text-[11px] font-medium" [class]="statusClass(p.status)">{{ p.status }}</span></dd>
+      </div>
+    </dl>
+  </div>
+}

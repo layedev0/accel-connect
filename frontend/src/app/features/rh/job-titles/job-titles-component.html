@@ -1,0 +1,189 @@
+<div class="p-0">
+  <!-- Header -->
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">Intitulés de poste</h1>
+    <button
+      type="button"
+      (click)="openCreate()"
+      class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white bg-[#25509d] hover:bg-[#1e3d7a] transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Ajouter
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{{ error() }}</div>
+  }
+
+  <!-- Table -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    @if (loading()) {
+      <div class="p-12 text-center text-gray-500 text-sm">Chargement...</div>
+    } @else if (jobTitles().length === 0) {
+      <div class="p-12 text-center text-gray-500 text-sm">Aucun intitulé de poste. Cliquez sur "Ajouter" pour commencer.</div>
+    } @else {
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm min-w-[560px]">
+        <thead>
+          <tr class="border-b border-gray-100 bg-gray-50 text-left">
+            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Code</th>
+            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Intitulé</th>
+            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Description</th>
+            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (item of jobTitles(); track item.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full bg-[#25509d]/10 px-2.5 py-0.5 text-xs font-semibold text-[#25509d]">
+                  {{ item.jobTitleCode }}
+                </span>
+              </td>
+              <td class="px-6 py-4 font-medium text-gray-900">{{ item.jobTitle }}</td>
+              <td class="px-6 py-4 text-gray-500">{{ item.jobDescription || '—' }}</td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    (click)="openEdit(item)"
+                    class="p-1.5 rounded-lg text-gray-400 hover:text-[#25509d] hover:bg-[#25509d]/10 transition-colors"
+                    title="Modifier"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="askDelete(item.id)"
+                    class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Supprimer"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create / Edit Modal -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <h2 class="text-lg font-semibold text-gray-900">
+          {{ editingId() ? 'Modifier l\'intitulé' : 'Nouvel intitulé de poste' }}
+        </h2>
+        <button type="button" (click)="closeModal()" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="p-6 space-y-4">
+
+        <div class="space-y-1.5">
+          <label class="block text-sm font-medium text-gray-700">Intitulé <span class="text-[#25509d]">*</span></label>
+          <input
+            formControlName="jobTitle"
+            type="text"
+            class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            placeholder="ex: Développeur Full Stack"
+          />
+          @if (form.get('jobTitle')?.invalid && form.get('jobTitle')?.touched) {
+            <p class="text-xs text-red-600">Champ obligatoire (max 60 caractères)</p>
+          }
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-sm font-medium text-gray-700">Code <span class="text-[#25509d]">*</span></label>
+          <input
+            formControlName="jobTitleCode"
+            type="text"
+            maxlength="3"
+            class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            placeholder="001"
+          />
+          <p class="text-xs text-gray-500">3 chiffres (ex: 001, 042, 999)</p>
+          @if (form.get('jobTitleCode')?.invalid && form.get('jobTitleCode')?.touched) {
+            <p class="text-xs text-red-600">Code requis — 1 à 3 chiffres</p>
+          }
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea
+            formControlName="jobDescription"
+            rows="3"
+            class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20 resize-none"
+            placeholder="Description optionnelle..."
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            (click)="closeModal()"
+            class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            [disabled]="saving()"
+            class="rounded-lg px-4 py-2.5 text-sm font-medium text-white bg-[#99cfbd] hover:bg-[#7ab8a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {{ saving() ? 'Sauvegarde...' : 'Sauvegarder' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Confirm Delete Dialog -->
+@if (confirmDeleteId()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-white shadow-2xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 class="text-base font-semibold text-gray-900">Supprimer l'intitulé ?</h3>
+      </div>
+      <p class="text-sm text-gray-500 mb-6">Cette action est irréversible. Les employés liés à cet intitulé ne seront pas affectés.</p>
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          (click)="cancelDelete()"
+          class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors"
+        >
+          Annuler
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          [disabled]="deleting() !== null"
+          class="rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 transition-colors"
+        >
+          {{ deleting() !== null ? 'Suppression...' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

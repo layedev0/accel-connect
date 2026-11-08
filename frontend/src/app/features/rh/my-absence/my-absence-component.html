@@ -1,0 +1,512 @@
+@if (loading()) {
+  <div class="flex items-center justify-center h-64">
+    <div class="w-8 h-8 border-4 border-[#25509d] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+} @else {
+
+  <!-- Page header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Mes Absences</h1>
+
+  </div>
+
+  <!-- Success message -->
+  @if (successMsg()) {
+    <div class="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm flex items-start gap-2">
+      <span>✓</span>
+      <span>{{ successMsg() }}</span>
+    </div>
+  }
+
+  <!-- Tab navigation -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="flex gap-1 -mb-px overflow-x-auto">
+      @for (tab of ([
+        { id: 'pending',  label: 'En attente', count: pendingAbsences().length },
+        { id: 'approved', label: 'Approuvés',  count: approvedAbsences().length },
+        { id: 'rejected', label: 'Rejetés',    count: rejectedAbsences().length }
+      ]); track tab.id) {
+        <button
+          (click)="setTab($any(tab.id))"
+          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2"
+          [class]="activeTab() === tab.id
+            ? 'border-[#25509d] text-[#25509d]'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          {{ tab.label }}
+          @if (tab.count > 0) {
+            <span
+              class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold"
+              [class]="activeTab() === tab.id ? 'bg-[#25509d] text-white' : 'bg-gray-100 text-gray-600'"
+            >
+              {{ tab.count }}
+            </span>
+          }
+        </button>
+      }
+    </nav>
+  </div>
+
+  <!-- ── EN ATTENTE TAB ── -->
+  @if (activeTab() === 'pending') {
+    <!-- Declare button -->
+    <div class="flex justify-end mb-4">
+      <button
+        (click)="toggleForm()"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
+        [style.background-color]="showForm() ? '#6b7280' : '#25509d'"
+      >
+        @if (showForm()) { <span>✕ Fermer</span> } @else { <span>+ Déclarer une absence</span> }
+      </button>
+    </div>
+
+    <!-- Form -->
+    @if (showForm()) {
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+        <h2 class="text-base font-semibold text-gray-800 mb-4">
+          @if (editingAbsence()) { Modifier la demande d'absence } @else { Nouvelle demande d'absence }
+        </h2>
+
+        @if (errorMsg()) {
+          <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+
+          <!-- Type d'absence -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Type d'absence *</label>
+            <select
+              formControlName="absenceType"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]"
+            >
+              <option [value]="null" disabled selected>Sélectionner un type...</option>
+              @for (type of absenceTypes(); track type.code) {
+                <option [value]="type.name">{{ type.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Date + times -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Date *</label>
+              <input
+                type="date"
+                formControlName="date"
+                [min]="todayStr"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Heure de début *</label>
+              <select
+                formControlName="startTime"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]"
+              >
+                <option value="" disabled>-- hh:mm --</option>
+                @for (slot of timeSlots; track slot) {
+                  <option [value]="slot">{{ slot }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Heure de fin *</label>
+              <select
+                formControlName="endTime"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]"
+              >
+                <option value="" disabled>-- hh:mm --</option>
+                @for (slot of timeSlots; track slot) {
+                  <option [value]="slot">{{ slot }}</option>
+                }
+              </select>
+              @if (durationError()) {
+                <p class="mt-1 text-xs text-red-600 font-medium">{{ durationError() }}</p>
+              } @else if (estimatedDuration()) {
+                <p class="mt-1 text-xs text-gray-500">Durée : <strong class="text-[#25509d]">{{ estimatedDuration() }}</strong></p>
+              }
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Motif <span class="text-red-500">*</span></label>
+            <textarea
+              formControlName="reason"
+              rows="2"
+              placeholder="Raison de l'absence"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#25509d]"
+              [class.border-red-400]="form.controls.reason.invalid && form.controls.reason.touched"
+            ></textarea>
+            @if (form.controls.reason.invalid && form.controls.reason.touched) {
+              <p class="mt-1 text-xs text-red-500">Le motif est obligatoire.</p>
+            }
+          </div>
+
+          <!-- Approver single-select -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+              Approbateur <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <button type="button" (click)="toggleApproverDropdown()"
+                [class]="'w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm text-left bg-white focus:outline-none focus:ring-2 focus:ring-[#25509d] border ' + (approverError() ? 'border-red-400' : 'border-gray-300')">
+                <span [class]="selectedApproverId() === null ? 'text-gray-400' : 'text-gray-700'">
+                  @if (selectedApproverId() === null) { Rechercher un approbateur... }
+                  @else { {{ selectedApprover()?.email }} }
+                </span>
+                <span class="text-gray-400 text-xs ml-2">{{ showApproverDropdown() ? '▴' : '▾' }}</span>
+              </button>
+              @if (showApproverDropdown()) {
+                <div class="fixed inset-0 z-[9]" (click)="closeApproverDropdown()"></div>
+                <div class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                  <div class="p-2 border-b border-gray-100">
+                    <input type="text" [value]="approverSearch()" (input)="approverSearch.set($any($event.target).value)"
+                      (click)="$event.stopPropagation()" placeholder="Rechercher par email ou nom..."
+                      class="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#25509d]" autofocus />
+                  </div>
+                  <div class="max-h-48 overflow-y-auto">
+                    @if (filteredColleagues().length === 0) {
+                      <div class="px-4 py-4 text-xs text-gray-400 text-center">Aucun résultat</div>
+                    }
+                    @for (c of filteredColleagues(); track c.id) {
+                      <button type="button" (click)="toggleApprover(c.id)"
+                        class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors">
+                        <span class="w-4 h-4 flex-shrink-0 border-2 rounded-full flex items-center justify-center transition-colors"
+                          [class]="selectedApproverId() === c.id ? 'bg-[#25509d] border-[#25509d]' : 'border-gray-300 bg-white'">
+                          @if (selectedApproverId() === c.id) {
+                            <span class="w-2 h-2 rounded-full bg-white block"></span>
+                          }
+                        </span>
+                        <div class="min-w-0">
+                          <div class="text-sm text-gray-800 font-medium truncate">{{ c.email }}</div>
+                          <div class="text-xs text-gray-400">{{ c.firstName }} {{ c.lastName }}</div>
+                        </div>
+                      </button>
+                    }
+                  </div>
+                  <div class="p-2 border-t border-gray-100 flex justify-end">
+                    <button type="button" (click)="closeApproverDropdown()"
+                      class="text-xs text-gray-500 hover:text-gray-700 px-3 py-1 rounded transition-colors">Fermer</button>
+                  </div>
+                </div>
+              }
+            </div>
+            @if (approverError()) {
+              <p class="mt-1 text-xs text-red-500">Veuillez sélectionner un approbateur.</p>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              (click)="toggleForm()"
+              class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="form.invalid || submitting() || !!durationError()"
+              class="px-5 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
+              style="background-color: #25509d;"
+            >
+              @if (submitting()) { Envoi en cours... } @else if (editingAbsence()) { Enregistrer les modifications } @else { Soumettre la demande }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Pending table -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      @if (pendingAbsences().length === 0) {
+        <div class="px-6 py-10 text-center text-sm text-gray-400">
+          Aucune demande d'absence en attente.
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="px-6 py-3 text-left font-medium">Type</th>
+                <th class="px-6 py-3 text-left font-medium">Date</th>
+                <th class="px-6 py-3 text-left font-medium">Début</th>
+                <th class="px-6 py-3 text-left font-medium">Fin</th>
+                <th class="px-6 py-3 text-center font-medium">Durée</th>
+                <th class="px-6 py-3 text-left font-medium">Motif</th>
+                <th class="px-6 py-3 text-center font-medium">Statut</th>
+                <th class="px-6 py-3 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (abs of pagedAbsences(); track abs.id) {
+                <tr
+                  class="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                  (click)="toggleExpand(abs.id)"
+                >
+                  <td class="px-6 py-4 font-medium text-gray-800">{{ abs.absenceTypeName || '—' }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(abs.date) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatTime(abs.startTime) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatTime(abs.endTime) }}</td>
+                  <td class="px-6 py-4 text-center font-semibold text-gray-700">{{ abs.durationHours }}h</td>
+                  <td class="px-6 py-4 text-gray-500 max-w-xs truncate">{{ abs.reason || '—' }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusClass(abs.status) }}">
+                      {{ abs.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex gap-3 justify-end">
+                      <button
+                        (click)="$event.stopPropagation(); openEdit(abs)"
+                        class="text-xs text-[#25509d] hover:underline font-medium transition-colors"
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        (click)="$event.stopPropagation(); deleteAbsence(abs.id)"
+                        class="text-xs text-red-600 hover:text-red-800 font-medium transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                @if (expandedId() === abs.id) {
+                  <tr>
+                    <td colspan="8" class="px-6 pb-4 bg-gray-50">
+                      <ng-container *ngTemplateOutlet="absenceDetail; context: { $implicit: abs }"></ng-container>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <ng-container *ngTemplateOutlet="paginationControls"></ng-container>
+      }
+    </div>
+  }
+
+  <!-- ── APPROUVÉS TAB ── -->
+  @if (activeTab() === 'approved') {
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      @if (approvedAbsences().length === 0) {
+        <div class="px-6 py-10 text-center text-sm text-gray-400">
+          Aucune demande d'absence approuvée.
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="px-6 py-3 text-left font-medium">Type</th>
+                <th class="px-6 py-3 text-left font-medium">Date</th>
+                <th class="px-6 py-3 text-left font-medium">Début</th>
+                <th class="px-6 py-3 text-left font-medium">Fin</th>
+                <th class="px-6 py-3 text-center font-medium">Durée</th>
+                <th class="px-6 py-3 text-left font-medium">Motif</th>
+                <th class="px-6 py-3 text-center font-medium">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (abs of pagedAbsences(); track abs.id) {
+                <tr
+                  class="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                  (click)="toggleExpand(abs.id)"
+                >
+                  <td class="px-6 py-4 font-medium text-gray-800">{{ abs.absenceTypeName || '—' }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(abs.date) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatTime(abs.startTime) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatTime(abs.endTime) }}</td>
+                  <td class="px-6 py-4 text-center font-semibold text-gray-700">{{ abs.durationHours }}h</td>
+                  <td class="px-6 py-4 text-gray-500 max-w-xs truncate">{{ abs.reason || '—' }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusClass(abs.status) }}">
+                      {{ abs.status }}
+                    </span>
+                  </td>
+                </tr>
+                @if (expandedId() === abs.id) {
+                  <tr>
+                    <td colspan="7" class="px-6 pb-4 bg-gray-50">
+                      <ng-container *ngTemplateOutlet="absenceDetail; context: { $implicit: abs }"></ng-container>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <ng-container *ngTemplateOutlet="paginationControls"></ng-container>
+      }
+    </div>
+  }
+
+  <!-- ── REJETÉS TAB ── -->
+  @if (activeTab() === 'rejected') {
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      @if (rejectedAbsences().length === 0) {
+        <div class="px-6 py-10 text-center text-sm text-gray-400">
+          Aucune demande d'absence rejetée.
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="px-6 py-3 text-left font-medium">Type</th>
+                <th class="px-6 py-3 text-left font-medium">Date</th>
+                <th class="px-6 py-3 text-left font-medium">Début</th>
+                <th class="px-6 py-3 text-left font-medium">Fin</th>
+                <th class="px-6 py-3 text-center font-medium">Durée</th>
+                <th class="px-6 py-3 text-left font-medium">Motif</th>
+                <th class="px-6 py-3 text-center font-medium">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (abs of pagedAbsences(); track abs.id) {
+                <tr
+                  class="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                  (click)="toggleExpand(abs.id)"
+                >
+                  <td class="px-6 py-4 font-medium text-gray-800">{{ abs.absenceTypeName || '—' }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(abs.date) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatTime(abs.startTime) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatTime(abs.endTime) }}</td>
+                  <td class="px-6 py-4 text-center font-semibold text-gray-700">{{ abs.durationHours }}h</td>
+                  <td class="px-6 py-4 text-gray-500 max-w-xs truncate">{{ abs.reason || '—' }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusClass(abs.status) }}">
+                      {{ abs.status }}
+                    </span>
+                  </td>
+                </tr>
+                @if (expandedId() === abs.id) {
+                  <tr>
+                    <td colspan="7" class="px-6 pb-4 bg-gray-50">
+                      <ng-container *ngTemplateOutlet="absenceDetail; context: { $implicit: abs }"></ng-container>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <ng-container *ngTemplateOutlet="paginationControls"></ng-container>
+      }
+    </div>
+  }
+
+  <!-- ── SHARED TEMPLATES ── -->
+
+  <!-- Expanded detail -->
+  <ng-template #absenceDetail let-abs>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Détail</p>
+        <div class="space-y-1 text-xs text-gray-600">
+          <div class="flex justify-between border-b border-gray-100 py-1">
+            <span>Date soumise</span>
+            <span>{{ formatDate(abs.dateApplied) }}</span>
+          </div>
+          <div class="flex justify-between border-b border-gray-100 py-1">
+            <span>Durée</span>
+            <span class="font-medium">{{ abs.durationHours }}h</span>
+          </div>
+          @if (abs.reason) {
+            <div class="flex justify-between py-1">
+              <span>Motif</span>
+              <span class="text-right max-w-xs">{{ abs.reason }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        @if (abs.approvers && abs.approvers.length > 0) {
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Approbateurs désignés</p>
+            <div class="flex flex-wrap gap-1.5">
+              @for (a of abs.approvers; track a.id) {
+                <span class="px-2.5 py-1 bg-[#25509d]/10 text-[#25509d] text-xs rounded-full font-medium">
+                  {{ a.displayName }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        @if (abs.decidedByName) {
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              {{ abs.status === 'Approuvé' ? 'Approuvé par' : 'Rejeté par' }}
+            </p>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium"
+              [class]="abs.status === 'Approuvé' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+              {{ abs.decidedByName }}
+            </span>
+          </div>
+        }
+
+        @if (abs.comments.length > 0) {
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Commentaires</p>
+            <div class="space-y-2">
+              @for (comment of abs.comments; track comment.createdAt) {
+                <div class="bg-white border border-gray-200 rounded-lg p-3 text-xs">
+                  <p class="text-gray-700">{{ comment.text }}</p>
+                  <p class="text-gray-400 mt-1">{{ comment.author }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Pagination -->
+  <ng-template #paginationControls>
+    @if (totalPages() > 1) {
+      <div class="flex items-center justify-between px-6 py-3 border-t border-gray-100">
+        <p class="text-xs text-gray-500">
+          Page {{ currentPage() }} sur {{ totalPages() }} &bull;
+          {{ (currentPage() - 1) * pageSize + 1 }}–{{ pageEnd() }} sur {{ activeTabAbsences().length }} demandes
+        </p>
+        <div class="flex items-center gap-1">
+          <button
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            class="px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            &#8592;
+          </button>
+          @for (p of pages(); track p) {
+            <button
+              (click)="goToPage(p)"
+              class="px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors"
+              [class]="p === currentPage() ? 'border-[#25509d] text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
+              [style.background-color]="p === currentPage() ? '#25509d' : ''"
+            >
+              {{ p }}
+            </button>
+          }
+          <button
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            class="px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            &#8594;
+          </button>
+        </div>
+      </div>
+    }
+  </ng-template>
+
+}

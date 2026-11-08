@@ -1,0 +1,97 @@
+<aside
+  class="flex flex-col bg-white border-r border-gray-200 transition-all duration-300 shrink-0 shadow-sm
+         fixed inset-y-0 left-0 z-50 h-screen
+         md:relative md:inset-y-auto md:left-auto md:z-auto md:h-auto md:self-stretch md:min-h-full
+         md:translate-x-0"
+  [class.w-64]="!collapsed() || mobileOpen"
+  [class.w-20]="collapsed() && !mobileOpen"
+  [ngClass]="{ '-translate-x-full': !mobileOpen }"
+>
+  <!-- Profile Section -->
+  <div class="p-4 border-b border-gray-100">
+    <div class="flex items-center gap-3">
+      <div class="relative shrink-0">
+        <!-- Collapse toggle – desktop only -->
+        <button
+          (click)="toggleCollapse()"
+          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#25509d] text-white hidden md:flex items-center justify-center hover:bg-[#1e3d7a] transition-colors z-10"
+          [title]="collapsed() ? 'Agrandir' : 'Réduire'"
+        >
+          <svg
+            class="w-3.5 h-3.5 transition-transform"
+            [class.rotate-180]="collapsed()"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <!-- Close button – mobile only -->
+        <button
+          (click)="mobileClose.emit()"
+          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gray-400 text-white flex md:hidden items-center justify-center hover:bg-gray-600 transition-colors z-10"
+          title="Fermer"
+        >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div
+          class="w-14 h-14 rounded-full bg-gradient-to-br from-[#25509d] to-[#99cfbd] flex items-center justify-center text-white font-bold text-lg overflow-hidden"
+        >
+          @if (avatarUrl) {
+            <img [src]="avatarUrl" [alt]="getDisplayName()" class="w-full h-full object-cover" />
+          } @else {
+            {{ getDisplayName().charAt(0) }}
+          }
+        </div>
+      </div>
+      @if (!collapsed() || mobileOpen) {
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold text-gray-900 truncate">{{ getDisplayName() }}</p>
+          <p class="text-xs text-gray-500 truncate">Employé</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto py-2">
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="!bg-[#25509d] !text-white"
+        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#25509d]/5 hover:text-[#25509d] transition-colors mx-2 rounded-lg [&.router-link-active]:hover:!bg-[#25509d] [&.router-link-active]:hover:!text-white"
+        [title]="collapsed() && !mobileOpen ? item.label : ''"
+        (click)="onNavItemClick()"
+      >
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.iconPath" />
+        </svg>
+        @if (!collapsed() || mobileOpen) {
+          <span class="truncate">{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <!-- Footer link back to home -->
+  <div class="border-t border-gray-100 p-3">
+    <a
+      routerLink="/"
+      class="flex items-center gap-3 px-3 py-2 text-xs text-gray-500 hover:text-[#25509d] rounded-lg hover:bg-[#25509d]/5 transition-colors"
+      [title]="collapsed() && !mobileOpen ? 'Accueil' : ''"
+      (click)="onNavItemClick()"
+    >
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+      @if (!collapsed() || mobileOpen) {
+        <span>Retour à l'accueil</span>
+      }
+    </a>
+  </div>
+</aside>

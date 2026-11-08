@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Backend - Spring Boot API
+  backend:
+    image: shams2305/accel-connect-back:v3.3
+    container_name: accel-connect-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/accel_connect
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-accel_user}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-accel_password}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_ISSUER_URI}
+    depends_on:
+      - postgres
+    networks:
+      - accel-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend - Angular application
+  frontend:
+    image: shams2305/accel-connect-front:v2.8
+    container_name: accel-connect-frontend
+    ports:
+      - "80:8080"
+    depends_on:
+      - backend
+    networks:
+      - accel-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: accel-connect-db
+    environment:
+      - POSTGRES_DB=accel_connect
+      - POSTGRES_USER=${DB_USERNAME:-accel_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-accel_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/database/views.sql:/docker-entrypoint-initdb.d/views.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - accel-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-accel_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  accel-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

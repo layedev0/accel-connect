@@ -1,0 +1,56 @@
+<div class="flex flex-1 flex-row min-h-[calc(100vh-4rem)] bg-[#f6f6f9]">
+
+  <!-- Mobile backdrop -->
+  @if (mobileSidebarOpen()) {
+    <div
+      class="fixed inset-0 z-40 bg-black/40 md:hidden"
+      (click)="mobileSidebarOpen.set(false)"
+    ></div>
+  }
+
+  <app-employee-portal-sidebar
+    ngSkipHydration
+    [mobileOpen]="mobileSidebarOpen()"
+    (mobileClose)="mobileSidebarOpen.set(false)"
+  />
+
+  <div class="flex flex-1 flex-col min-w-0">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 flex items-center gap-3 bg-white border-b border-gray-200 px-4 md:px-6 py-4 shadow-sm">
+      <!-- Hamburger – mobile only -->
+      <button
+        class="flex md:hidden items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
+        (click)="mobileSidebarOpen.set(true)"
+        title="Menu"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <a
+        routerLink="/"
+        class="flex shrink-0 items-center justify-center w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-[#25509d]/10 hover:text-[#25509d] transition-colors"
+        title="Accueil"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+      </a>
+      <div class="w-px h-6 bg-gray-200" aria-hidden="true"></div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-[#99cfbd]"></div>
+        <h2 class="text-sm font-semibold text-gray-700">Espace Employé</h2>
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 md:p-6 overflow-auto">
+      <router-outlet />
+    </main>
+  </div>
+</div>

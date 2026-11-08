@@ -1,0 +1,667 @@
+<!-- SECTION RESTAURATION - Design Premium avec Accordéon Intelligent -->
+<section
+  class="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 py-3 sm:py-4 md:py-6 lg:py-8 overflow-hidden">
+  <!-- Animated Background -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div
+      class="absolute top-0 -right-10 sm:-right-20 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-br from-red-400/10 to-orange-400/10 rounded-full blur-3xl animate-pulse"
+      style="animation-duration: 4s"></div>
+    <div
+      class="absolute bottom-0 -left-10 sm:-left-20 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-tr from-blue-400/10 to-teal-400/10 rounded-full blur-3xl animate-pulse"
+      style="animation-duration: 5s; animation-delay: 1s"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 relative z-10">
+    <!-- Hero Header -->
+    <div class="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
+      <!-- Status Badge -->
+      <div class="flex items-center justify-between mb-2 sm:mb-3 md:mb-4 flex-wrap gap-2">
+        <div
+          class="inline-flex items-center gap-1.5 sm:gap-2 md:gap-3 px-2.5 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 bg-white/80 backdrop-blur-xl rounded-lg sm:rounded-xl md:rounded-2xl border border-red-100 shadow-lg hover:shadow-xl transition-all duration-300">
+          <fa-icon [icon]="['fas', 'bell']"
+            class="text-red-500 text-[10px] sm:text-xs md:text-sm animate-bounce"></fa-icon>
+          <div class="flex items-center flex-wrap gap-1 sm:gap-1.5 md:gap-2">
+            <span class="text-red-600 font-black text-[10px] sm:text-xs md:text-sm uppercase tracking-wide">Menu du
+              Jour</span>
+            <span class="text-gray-500 text-[8px] sm:text-[10px] md:text-xs font-medium">{{
+              selectedDate() | date : 'dd/MM/yyyy'
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Title + Stats -->
+      <div class="grid lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 items-center mb-3 sm:mb-4 md:mb-6">
+        <!-- Left: Title -->
+        <div class="space-y-2 sm:space-y-3 md:space-y-4">
+          <div>
+            <h1
+              class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-gray-900 leading-tight sm:leading-none mb-1 sm:mb-1.5 md:mb-2"
+              style="font-family: 'Georgia, serif'">
+              À Table
+            </h1>
+            <h2
+              class="text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-black bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-clip-text text-transparent animate-pulse">
+              Vos délices quotidiens
+            </h2>
+          </div>
+
+          <!-- 4 Cartes financieres: DEPOSE - DEPENSE - AVOIR - DETTES -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-2 md:gap-3">
+
+            <!-- CARTE 1: DEPOSE -->
+            <div class="group relative">
+              <div class="absolute inset-0 rounded-lg sm:rounded-xl md:rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"
+                style="background: linear-gradient(to bottom right, #3B82F6, #1D4ED8)"></div>
+              <div class="relative bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl md:rounded-2xl p-1.5 sm:p-2 md:p-2.5 lg:p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-md sm:rounded-lg md:rounded-xl flex items-center justify-center shadow-lg"
+                    style="background: linear-gradient(to bottom right, #3B82F6, #1D4ED8)">
+                    <fa-icon [icon]="['fas', 'wallet']" class="text-white text-[10px] sm:text-xs md:text-sm"></fa-icon>
+                  </div>
+                  @if (userBalance()?.recentDeposits?.length) {
+                  <button (click)="toggleDropdown('deposit'); $event.stopPropagation()"
+                    class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-all">
+                    <fa-icon [icon]="['fas', 'chevron-down']"
+                      class="text-blue-600 text-[8px] sm:text-[9px] transition-transform duration-300"
+                      [class.rotate-180]="isDropdownOpen('deposit')"></fa-icon>
+                  </button>
+                  }
+                </div>
+                <div class="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs text-gray-500 uppercase font-bold mb-0.5">
+                  Dernier depot
+                </div>
+                <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-black text-gray-900">
+                  {{ userBalance() ? formatAmount(userBalance()!.lastDepositAmount || 0) : '0'
+                  }}<span class="text-[9px] sm:text-[10px] md:text-xs ml-0.5 text-gray-600">F</span>
+                </div>
+                @if (userBalance()?.lastDepositDate) {
+                <div class="text-[7px] sm:text-[8px] text-blue-500 font-semibold mt-0.5">
+                  {{ formatDate(userBalance()!.lastDepositDate) }}
+                </div>
+                }
+                <!-- Dropdown historique depots -->
+                @if (isDropdownOpen('deposit') && userBalance()?.recentDeposits?.length) {
+                <div class="mt-1.5 pt-1.5 border-t border-blue-100 space-y-1 animate-fadeIn">
+                  @for (dep of userBalance()!.recentDeposits; track dep.date) {
+                  <div class="flex items-center justify-between text-[8px] sm:text-[9px]">
+                    <span class="text-gray-500">{{ formatDate(dep.date) }}</span>
+                    <span class="font-bold text-blue-700">{{ formatAmount(dep.amount) }} F</span>
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+            </div>
+
+            <!-- CARTE 2: DEPENSE -->
+            <div class="group relative">
+              <div class="absolute inset-0 rounded-lg sm:rounded-xl md:rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"
+                style="background: linear-gradient(to bottom right, #EF4444, #DC2626)"></div>
+              <div class="relative bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl md:rounded-2xl p-1.5 sm:p-2 md:p-2.5 lg:p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-md sm:rounded-lg md:rounded-xl flex items-center justify-center shadow-lg"
+                    style="background: linear-gradient(to bottom right, #EF4444, #DC2626)">
+                    <fa-icon [icon]="['fas', 'shopping-bag']" class="text-white text-[10px] sm:text-xs md:text-sm"></fa-icon>
+                  </div>
+                  @if (userBalance()?.recentWeeksSpending?.length) {
+                  <button (click)="toggleDropdown('spent'); $event.stopPropagation()"
+                    class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-all">
+                    <fa-icon [icon]="['fas', 'chevron-down']"
+                      class="text-red-600 text-[8px] sm:text-[9px] transition-transform duration-300"
+                      [class.rotate-180]="isDropdownOpen('spent')"></fa-icon>
+                  </button>
+                  }
+                </div>
+                <div class="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs text-gray-500 uppercase font-bold mb-0.5">
+                  Semaine en cours
+                </div>
+                <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-black text-gray-900">
+                  {{ userBalance() ? formatAmount(userBalance()!.currentWeekSpent || 0) : '0'
+                  }}<span class="text-[9px] sm:text-[10px] md:text-xs ml-0.5 text-gray-600">F</span>
+                </div>
+                <!-- Dropdown historique semaines -->
+                @if (isDropdownOpen('spent') && userBalance()?.recentWeeksSpending?.length) {
+                <div class="mt-1.5 pt-1.5 border-t border-red-100 space-y-1 animate-fadeIn">
+                  @for (week of userBalance()!.recentWeeksSpending; track week.weekLabel) {
+                  <div class="flex items-center justify-between text-[8px] sm:text-[9px]">
+                    <span class="text-gray-500">{{ week.weekLabel }}</span>
+                    <span class="font-bold text-red-700">{{ formatAmount(week.totalSpent) }} F</span>
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+            </div>
+
+            <!-- CARTE 3: AVOIR -->
+            <div class="group relative">
+              <div class="absolute inset-0 rounded-lg sm:rounded-xl md:rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"
+                style="background: linear-gradient(to bottom right, #10B981, #059669)"></div>
+              <div class="relative bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl md:rounded-2xl p-1.5 sm:p-2 md:p-2.5 lg:p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-md sm:rounded-lg md:rounded-xl flex items-center justify-center mb-1 sm:mb-1.5 md:mb-2 shadow-lg"
+                  style="background: linear-gradient(to bottom right, #10B981, #059669)">
+                  <fa-icon [icon]="['fas', 'coins']" class="text-white text-[10px] sm:text-xs md:text-sm"></fa-icon>
+                </div>
+                <div class="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs text-gray-500 uppercase font-bold mb-0.5">
+                  Avoir
+                </div>
+                <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-black"
+                  [ngClass]="(userBalance()?.avoir || 0) > 0 ? 'text-green-700' : 'text-gray-900'">
+                  {{ userBalance() ? formatAmount(userBalance()!.avoir || 0) : '0'
+                  }}<span class="text-[9px] sm:text-[10px] md:text-xs ml-0.5 text-gray-600">F</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARTE 4: DETTES -->
+            <div class="group relative">
+              <div class="absolute inset-0 rounded-lg sm:rounded-xl md:rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"
+                [style.background]="(userBalance()?.debt || 0) > 0
+                  ? 'linear-gradient(to bottom right, #EF4444, #DC2626)'
+                  : 'linear-gradient(to bottom right, #6B7280, #4B5563)'"></div>
+              <div class="relative bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl md:rounded-2xl p-1.5 sm:p-2 md:p-2.5 lg:p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-md sm:rounded-lg md:rounded-xl flex items-center justify-center mb-1 sm:mb-1.5 md:mb-2 shadow-lg"
+                  [style.background]="(userBalance()?.debt || 0) > 0
+                    ? 'linear-gradient(to bottom right, #EF4444, #DC2626)'
+                    : 'linear-gradient(to bottom right, #6B7280, #4B5563)'">
+                  @if ((userBalance()?.debt || 0) > 0) {
+                  <fa-icon [icon]="['fas', 'exclamation-triangle']" class="text-white text-[10px] sm:text-xs md:text-sm"></fa-icon>
+                  } @else {
+                  <fa-icon [icon]="['fas', 'check-circle']" class="text-white text-[10px] sm:text-xs md:text-sm"></fa-icon>
+                  }
+                </div>
+                <div class="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs text-gray-500 uppercase font-bold mb-0.5">
+                  Dettes
+                </div>
+                <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-black"
+                  [ngClass]="(userBalance()?.debt || 0) > 0 ? 'text-red-600' : 'text-gray-900'">
+                  @if ((userBalance()?.debt || 0) > 0) {
+                  -{{ formatAmount(userBalance()!.debt) }}
+                  } @else {
+                  0
+                  }<span class="text-[9px] sm:text-[10px] md:text-xs ml-0.5 text-gray-600">F</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Animation (Desktop only) -->
+        <div class="hidden lg:flex items-center justify-center">
+          <div class="relative w-full max-w-md">
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse">
+            </div>
+            <div class="relative">
+              <div
+                class="relative w-48 h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 mx-auto rounded-full shadow-2xl overflow-hidden">
+                <div class="absolute inset-0 bg-white rounded-full"></div>
+                <ng-lottie [options]="lottieOptions" width="100%" height="100%"
+                  containerClass="flex items-center justify-center relative z-10"
+                  (animationCreated)="onAnimationCreated($any($event))"></ng-lottie>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Jours + Panier + Actions rapides -->
+      <div
+        class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 pt-2 sm:pt-3 md:pt-4 border-t-2 border-gray-200">
+        <!-- Sélecteur de jours -->
+        @for (day of days; track day) {
+        <button [disabled]="day !== selectedDay()" [class]="
+            selectedDay() === day
+              ? 'px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-md sm:rounded-lg md:rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-[10px] sm:text-xs md:text-sm uppercase tracking-wider shadow-lg shadow-red-500/30 scale-105'
+              : 'px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-md sm:rounded-lg md:rounded-xl bg-gray-200 text-gray-400 font-bold text-[10px] sm:text-xs md:text-sm uppercase tracking-wider border-2 border-gray-200 cursor-not-allowed opacity-70'
+          " class="transition-all duration-300">
+          <span class="hidden xs:inline">{{ day }}</span>
+          <span class="xs:hidden">{{ day.substring(0, 3) }}</span>
+        </button>
+        }
+
+        <div class="flex-grow"></div>
+
+        <!-- Bouton Ajouter au panier GLOBAL avec animation -->
+        @if (getTotalSelectedItems() > 0) {
+        <button (click)="addAllToCart()"
+          class="group cursor-pointer relative px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg sm:rounded-xl shadow-xl hover:shadow-2xl transition-all hover:scale-105 flex items-center gap-1 sm:gap-1.5 md:gap-2 animate-fadeIn">
+          <fa-icon [icon]="['fas', 'cart-plus']"
+            class="text-white text-xs sm:text-sm md:text-base group-hover:rotate-12 transition-transform"></fa-icon>
+          <span class="text-white font-bold text-[10px] sm:text-xs md:text-sm hidden sm:inline">Ajouter tout</span>
+          <span
+            class="px-1 sm:px-1.5 md:px-2 py-0.5 bg-white text-green-600 text-[8px] sm:text-[10px] md:text-xs font-black rounded-full animate-pulse">{{
+            getTotalSelectedItems() }}</span>
+        </button>
+        }
+
+        <!-- Panier -->
+        <button [routerLink]="['/restauration/cart']" class="group cursor-pointer relative">
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-md sm:rounded-lg md:rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity">
+          </div>
+          <div
+            class="relative px-2 sm:px-3 md:px-4 lg:px-5 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-md sm:rounded-lg md:rounded-xl flex items-center gap-1 sm:gap-1.5 md:gap-2 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            <fa-icon [icon]="['fas', 'shopping-cart']"
+              class="text-white text-xs sm:text-sm md:text-base group-hover:scale-110 transition-transform"></fa-icon>
+            <span class="text-white font-bold text-[10px] sm:text-xs md:text-sm hidden xs:inline">Panier</span>
+            <span
+              class="px-1 sm:px-1.5 md:px-2 py-0.5 bg-white text-red-500 text-[8px] sm:text-[10px] md:text-xs font-black rounded-full"
+              [class.animate-pulse]="cartService.cartItemCount() > 0">{{ cartService.cartItemCount() }}</span>
+          </div>
+        </button>
+
+        <!-- Mes commandes -->
+        <button [routerLink]="['/restauration/my-orders']" class="group cursor-pointer relative">
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-orange-500 to-green-500 rounded-md sm:rounded-lg md:rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity">
+          </div>
+          <div
+            class="relative px-2 sm:px-3 md:px-4 lg:px-5 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-orange-500 to-green-500 rounded-md sm:rounded-lg md:rounded-xl flex items-center gap-1 sm:gap-1.5 md:gap-2 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            <fa-icon [icon]="['fas', 'list-check']"
+              class="text-white text-xs sm:text-sm md:text-base group-hover:scale-110 transition-transform"></fa-icon>
+            <span class="text-white font-bold text-[10px] sm:text-xs md:text-sm hidden md:inline">Mes commandes</span>
+            <span class="text-white font-bold text-[10px] sm:text-xs md:hidden">Commandes</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Message d'erreur -->
+    @if (errorMessage()) {
+    <div
+      class="mb-3 sm:mb-4 p-2.5 sm:p-3 md:p-4 bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl animate-shake">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <fa-icon [icon]="['fas', 'exclamation-circle']"
+          class="text-red-500 text-sm sm:text-base md:text-lg flex-shrink-0 animate-pulse"></fa-icon>
+        <p class="text-red-700 font-semibold text-xs sm:text-sm md:text-base">
+          {{ errorMessage() }}
+        </p>
+      </div>
+    </div>
+    }
+
+    <!-- Loader -->
+    @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-8 sm:py-12 md:py-16">
+      <div class="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-3 sm:mb-4">
+        <div class="absolute inset-0 rounded-full border-4 border-red-200 animate-ping opacity-20"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-red-500 border-t-transparent animate-spin"></div>
+      </div>
+      <p class="text-gray-900 font-black text-sm sm:text-base md:text-lg animate-pulse">
+        Préparation de vos menus...
+      </p>
+    </div>
+    }
+
+    <!-- Restaurant Cards Grid avec Accordéon Amélioré -->
+    @if (!isLoading() && !isWeekend(selectedDate())) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4 lg:gap-5">
+      @for (restaurant of restaurants(); track restaurant.id; let idx = $index) {
+      <div class="group relative animate-fadeIn" [style.animation-delay]="idx * 100 + 'ms'">
+        <div
+          class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl blur-xl opacity-0 group-hover:opacity-20 transition-all duration-500"
+          [style.background]="
+            'linear-gradient(to bottom right, ' +
+            restaurant.gradientFrom +
+            ', ' +
+            restaurant.gradientTo +
+            ')'
+          "></div>
+
+        <div
+          class="relative bg-white rounded-xl sm:rounded-2xl md:rounded-3xl shadow-xl hover:shadow-2xl border-2 transition-all duration-500 overflow-hidden"
+          [class.border-red-300]="isRestaurantExpanded(restaurant.id)"
+          [class.border-gray-100]="!isRestaurantExpanded(restaurant.id)"
+          [class.ring-4]="isRestaurantExpanded(restaurant.id)"
+          [class.ring-red-500/20]="isRestaurantExpanded(restaurant.id)">
+
+          <!-- Header - Cliquable avec hover amélioré -->
+          <button (click)="toggleRestaurant(restaurant.id, $event)"
+            class="w-full text-left relative p-2.5 sm:p-3 md:p-4 overflow-hidden transition-all duration-500 hover:brightness-105 group/header"
+            [class.h-20]="!isRestaurantExpanded(restaurant.id)" [class.sm:h-24]="!isRestaurantExpanded(restaurant.id)"
+            [class.md:h-28]="!isRestaurantExpanded(restaurant.id)" [class.h-auto]="isRestaurantExpanded(restaurant.id)"
+            [style.background]="
+              'linear-gradient(to bottom right, ' +
+              restaurant.gradientFrom +
+              ', ' +
+              restaurant.gradientTo +
+              ')'
+            ">
+
+            <!-- Effet parallax au hover -->
+            <div
+              class="absolute inset-0 bg-white/10 opacity-0 group-hover/header:opacity-100 transition-opacity duration-300">
+            </div>
+
+            <div class="relative z-10 flex items-start justify-between">
+              <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 min-w-0">
+                <!-- Icône avec animation -->
+                <div
+                  class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl flex items-center justify-center border border-white/30 shadow-xl transition-all duration-300"
+                  [class.scale-110]="isRestaurantExpanded(restaurant.id)"
+                  [class.rotate-6]="isRestaurantExpanded(restaurant.id)">
+                  <fa-icon [icon]="['fas', restaurant.icon]"
+                    class="text-white text-xs sm:text-sm md:text-base lg:text-lg transition-transform duration-300"
+                    [class.scale-110]="isRestaurantExpanded(restaurant.id)"></fa-icon>
+                </div>
+
+                <!-- Infos restaurant -->
+                <div class="flex-1 min-w-0">
+                  <h3
+                    class="text-sm sm:text-base md:text-lg lg:text-xl font-black text-white tracking-tight mb-0.5 truncate">
+                    {{ restaurant.name }}
+                  </h3>
+                  <p class="text-white/90 text-[9px] sm:text-[10px] md:text-xs font-medium">
+                    {{ restaurant.subtitle }}
+                  </p>
+
+                  <!-- Badges supplémentaires -->
+                  @if (isRestaurantExpanded(restaurant.id)) {
+                  <div class="flex flex-wrap gap-1 mt-1.5 sm:mt-2 animate-fadeIn">
+                    @if (getRestaurantSelectedCount(restaurant.id) > 0) {
+                    <span
+                      class="text-white/90 text-[8px] sm:text-[9px] md:text-[10px] font-bold bg-white/20 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <fa-icon [icon]="['fas', 'check-circle']" class="text-[8px] sm:text-[9px]"></fa-icon>
+                      {{ getRestaurantSelectedCount(restaurant.id) }} sélectionné(s)
+                    </span>
+                    }
+                    @if (getRestaurantTotal(restaurant.id) > 0) {
+                    <span
+                      class="text-white/90 text-[8px] sm:text-[9px] md:text-[10px] font-bold bg-white/20 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 rounded-full">
+                      {{ formatAmount(getRestaurantTotal(restaurant.id)) }} F
+                    </span>
+                    }
+                  </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Toggle Icon amélioré -->
+              <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                <div
+                  class="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30 transition-all duration-300 group-hover/header:bg-white/30"
+                  [class.rotate-180]="isRestaurantExpanded(restaurant.id)"
+                  [class.scale-110]="isRestaurantExpanded(restaurant.id)">
+                  <fa-icon [icon]="['fas', 'chevron-down']"
+                    class="text-white text-xs sm:text-sm transition-transform duration-300"></fa-icon>
+                </div>
+                @if (restaurant.hasMenu && restaurant.items.length > 0 && !isRestaurantExpanded(restaurant.id)) {
+                <span
+                  class="text-white/90 text-[8px] sm:text-[9px] md:text-[10px] font-bold bg-white/20 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 rounded-full animate-pulse">
+                  {{ restaurant.items.length }} plats
+                </span>
+                }
+              </div>
+            </div>
+          </button>
+
+          <!-- Menu Items avec animation d'expansion fluide -->
+
+          <!-- 🔒 Restaurant BLOQUÉ -->
+          @if (restaurant.ordersBlocked) {
+          <div class="p-6 sm:p-8 text-center space-y-4">
+            <div class="w-16 h-16 mx-auto rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg sm:text-xl font-black text-gray-900 mb-2">
+                Commandes temporairement fermées
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                {{ restaurant.blockMessage || 'Les commandes pour ce restaurant sont actuellement indisponibles.
+                Veuillez réessayer plus tard.' }}
+              </p>
+            </div>
+            <div class="pt-2">
+              <div
+                class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-semibold">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Réouverture prochaine</span>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- ✅ Restaurant ACTIF avec menu -->
+          @else if (restaurant.hasMenu && restaurant.items.length > 0) {
+          <div class="transition-all duration-500 ease-in-out overflow-hidden"
+            [class.max-h-0]="!isRestaurantExpanded(restaurant.id)"
+            [class.max-h-[5000px]]="isRestaurantExpanded(restaurant.id)"
+            [class.opacity-0]="!isRestaurantExpanded(restaurant.id)"
+            [class.opacity-100]="isRestaurantExpanded(restaurant.id)">
+            <div class="p-2 sm:p-2.5 md:p-3 lg:p-4 space-y-1.5 sm:space-y-2">
+              <!-- 🍽️ CARTE DE PLAT COMPLÈTE AVEC TOOLTIP INTELLIGENT -->
+              @for (item of getVisibleItems(restaurant); track item.id; let itemIdx = $index) {
+              <div
+                class="group/item relative p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-gray-50 to-white rounded-lg sm:rounded-xl border-2 border-gray-100 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] animate-slideIn"
+                [ngClass]="{
+    'hover:border-red-500': item.hoverBorder === 'red-500',
+    'hover:border-orange-500': item.hoverBorder === 'orange-500',
+    'hover:border-green-500': item.hoverBorder === 'green-500',
+    'hover:border-blue-500': item.hoverBorder === 'blue-500',
+    'hover:border-purple-500': item.hoverBorder === 'purple-500',
+    'ring-2 ring-offset-2 ring-green-400': item.quantity > 0
+  }" [style.animation-delay]="itemIdx * 50 + 'ms'">
+
+                <!-- Effet de brillance au hover -->
+                <div
+                  class="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-500 pointer-events-none shine-effect">
+                </div>
+
+                <div class="flex items-center justify-between gap-1.5 sm:gap-2 md:gap-3 relative z-10">
+                  <!-- Section gauche: Image + Infos -->
+                  <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 min-w-0">
+
+                    <!-- Image du plat -->
+                    @if (item.imageUrl) {
+                    <div
+                      class="relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md sm:rounded-lg shadow-md group-hover/item:scale-110 transition-transform flex-shrink-0 overflow-hidden border-2 border-white">
+                      <img [src]="item.imageUrl" [alt]="item.mealName" class="w-full h-full object-cover"
+                        loading="lazy" />
+                      @if (item.quantity > 0) {
+                      <div
+                        class="absolute inset-0 bg-green-500/20 flex items-center justify-center backdrop-blur-[1px]">
+                        <fa-icon [icon]="['fas', 'check']" class="text-white text-xs animate-bounce"></fa-icon>
+                      </div>
+                      }
+                    </div>
+                    } @else {
+                    <div
+                      class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md sm:rounded-lg flex items-center justify-center shadow-md group-hover/item:scale-110 transition-transform flex-shrink-0"
+                      [style.background]="'linear-gradient(to bottom right, ' + item.gradientFrom + ', ' + item.gradientTo + ')'">
+                      <fa-icon [icon]="['fas', 'utensils']" class="text-white text-[10px] sm:text-xs"></fa-icon>
+                    </div>
+                    }
+
+                    <!-- Infos plat avec SYSTÈME DE TOOLTIP INTELLIGENT -->
+                    <div class="flex-1 min-w-0 relative">
+
+                      <!-- Container du nom avec tooltip -->
+                      <div class="relative group/tooltip">
+
+                        <!-- Nom du plat - Adaptatif selon la longueur -->
+                        <h4 class="font-black text-black-900 dark:text-black transition-all leading-tight" [ngClass]="{
+              'text-[9px] sm:text-[10px] md:text-xs cursor-help line-clamp-2': item.mealName.length > 40,
+              'text-[10px] sm:text-xs md:text-sm cursor-help truncate': item.mealName.length > 25 && item.mealName.length <= 40,
+              'text-[10px] sm:text-xs md:text-sm truncate': item.mealName.length <= 25
+            }" [attr.aria-label]="item.mealName.length > 25 ? item.mealName : null">
+                          {{ item.mealName }}
+                        </h4>
+
+                        <!-- 🎨 TOOLTIP LUXUEUX - Visible uniquement pour noms longs -->
+                        @if (item.mealName.length > 25) {
+                        <div
+                          class="absolute left-0 bottom-full mb-2 sm:mb-3 hidden group-hover/tooltip:block z-[100] animate-fadeIn pointer-events-none w-max"
+                          role="tooltip">
+
+                          <!-- Container responsive -->
+                          <div class="relative max-w-[200px] xs:max-w-[240px] sm:max-w-xs md:max-w-sm lg:max-w-md">
+
+                            <!-- Flèche du tooltip -->
+                            <div
+                              class="absolute left-4 sm:left-6 -bottom-1.5 sm:-bottom-2 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-700 dark:to-gray-600 transform rotate-45 shadow-lg"
+                              aria-hidden="true">
+                            </div>
+
+                            <!-- Contenu du tooltip -->
+                            <div
+                              class="relative bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-700 dark:to-gray-600 backdrop-blur-xl text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl shadow-2xl border border-white/10">
+
+                              <!-- Badge "Plat du jour" -->
+                              <div class="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                <div class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-400 animate-pulse"
+                                  aria-hidden="true"></div>
+                                <span
+                                  class="text-[8px] sm:text-[9px] font-bold text-green-400 uppercase tracking-wider">
+                                  Plat du jour
+                                </span>
+                              </div>
+
+                              <!-- Nom complet du plat -->
+                              <p class="text-xs sm:text-sm font-bold leading-relaxed break-words">
+                                {{ item.mealName }}
+                              </p>
+
+                              <!-- Section prix -->
+                              <div
+                                class="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-white/10">
+                                <!-- Icône monnaie -->
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" fill="currentColor"
+                                  viewBox="0 0 20 20" aria-hidden="true">
+                                  <path
+                                    d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                  <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
+                                    clip-rule="evenodd" />
+                                </svg>
+
+                                <!-- Prix -->
+                                <span class="text-xs sm:text-sm font-black text-yellow-400 whitespace-nowrap">
+                                  {{ item.unitPrice }} FCFA
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        }
+                      </div>
+
+                      <!-- Prix et quantité totale -->
+                      <div class="flex items-center gap-1 sm:gap-1.5 mt-0.5 flex-wrap">
+                        <span class="text-red-600 dark:text-red-400 font-black text-xs sm:text-sm md:text-base">
+                          {{ item.unitPrice }}
+                        </span>
+                        <span
+                          class="text-gray-600 dark:text-gray-400 font-bold text-[8px] sm:text-[9px] md:text-[10px]">
+                          FCFA
+                        </span>
+
+                        <!-- Badge total si quantité > 0 -->
+                        @if (item.quantity > 0) {
+                        <span
+                          class="text-green-600 dark:text-green-400 font-bold text-[8px] sm:text-[9px] md:text-[10px] bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded-full animate-pulse"
+                          aria-live="polite">
+                          = {{ item.unitPrice * item.quantity }} F
+                        </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Section droite: Contrôles de quantité -->
+                  <div class="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+                    <div
+                      class="flex items-center gap-0.5 sm:gap-1 bg-gray-100 rounded-md sm:rounded-lg p-0.5 transition-all"
+                      [class.bg-green-100]="item.quantity > 0" role="group"
+                      [attr.aria-label]="'Quantité de ' + item.mealName">
+
+                      <!-- Bouton moins -->
+                      <button type="button" [attr.aria-label]="'Diminuer la quantité de ' + item.mealName"
+                        class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-sm sm:rounded-md bg-white text-gray-700 flex items-center justify-center font-bold transition-all shadow-sm hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        [class.text-white]="item.quantity > 0" [class.hover:rotate-90]="item.quantity > 0"
+                        [style.background]="item.quantity > 0 ? 'linear-gradient(to bottom right, ' + item.gradientFrom + ', ' + item.gradientTo + ')' : ''"
+                        [disabled]="item.quantity === 0" (click)="decreaseQuantity(restaurant.id, item.id!, $event)">
+                        <fa-icon [icon]="['fas', 'minus']" class="text-[8px] sm:text-[9px] md:text-[10px]"></fa-icon>
+                      </button>
+
+                      <!-- Affichage quantité -->
+                      <span
+                        class="w-4 sm:w-5 md:w-6 text-center font-black text-[10px] sm:text-xs md:text-sm transition-all"
+                        [class.text-green-600]="item.quantity > 0" [class.text-gray-900]="item.quantity === 0"
+                        [class.scale-125]="item.quantity > 0" role="status"
+                        [attr.aria-label]="'Quantité: ' + item.quantity">
+                        {{ item.quantity }}
+                      </span>
+
+                      <!-- Bouton plus -->
+                      <button type="button" [attr.aria-label]="'Augmenter la quantité de ' + item.mealName"
+                        class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-sm sm:rounded-md text-white flex items-center justify-center font-bold shadow-md hover:shadow-lg hover:scale-110 hover:rotate-90 active:scale-95 transition-all"
+                        [style.background]="'linear-gradient(to bottom right, ' + item.gradientFrom + ', ' + item.gradientTo + ')'"
+                        (click)="increaseQuantity(restaurant.id, item.id!, $event)">
+                        <fa-icon [icon]="['fas', 'plus']" class="text-[8px] sm:text-[9px] md:text-[10px]"></fa-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              }
+
+              <!-- Bouton "Voir plus" / "Voir moins" -->
+              @if (hasMoreItems(restaurant)) {
+              <button (click)="toggleRestaurant(restaurant.id)"
+                class="w-full py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 border-2 border-gray-200 transition-all duration-300 flex items-center justify-center gap-2 group/expand hover:shadow-md">
+                @if (isRestaurantExpanded(restaurant.id)) {
+                <span class="text-gray-700 font-bold text-[10px] sm:text-xs md:text-sm">Voir moins</span>
+                <fa-icon [icon]="['fas', 'chevron-up']"
+                  class="text-gray-700 text-[10px] sm:text-xs group-hover/expand:translate-y-[-2px] transition-transform"></fa-icon>
+                } @else {
+                <span class="text-gray-700 font-bold text-[10px] sm:text-xs md:text-sm">Voir {{
+                  getHiddenItemsCount(restaurant) }} plat(s) de plus</span>
+                <fa-icon [icon]="['fas', 'chevron-down']"
+                  class="text-gray-700 text-[10px] sm:text-xs group-hover/expand:translate-y-[2px] transition-transform"></fa-icon>
+                }
+              </button>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- ❌ Aucun menu -->
+          @else if (!restaurant.ordersBlocked) {
+          <div class="p-4 sm:p-6 text-center">
+            <fa-icon [icon]="['fas', 'utensils']" class="text-gray-300 text-xl sm:text-2xl md:text-3xl mb-2"></fa-icon>
+            <p class="text-gray-500 font-semibold text-xs sm:text-sm md:text-base">
+              Aucun menu aujourd'hui
+            </p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Weekend Message -->
+    @if (!isLoading() && isWeekend(selectedDate())) {
+    <div
+      class="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-6 sm:p-8 md:p-10 text-center">
+      <div class="text-3xl sm:text-4xl md:text-5xl mb-3 sm:mb-4">🌴</div>
+      <h2 class="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 mb-2 sm:mb-3">
+        C'est le weekend !
+      </h2>
+      <p class="text-gray-700 text-sm sm:text-base md:text-lg">
+        Profitez de votre repos. Les commandes reprennent lundi.
+      </p>
+    </div>
+    }
+  </div>
+</section>

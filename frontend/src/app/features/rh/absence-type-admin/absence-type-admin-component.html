@@ -1,0 +1,47 @@
+<!-- Page header -->
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-800">Types d'absence</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Liste des types d'absence disponibles</p>
+  </div>
+</div>
+
+<!-- Absence types table -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="text-base font-semibold text-gray-800">Types d'absence ({{ absenceTypes().length }})</h2>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center h-32">
+      <div class="w-6 h-6 border-4 border-[#25509d] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else if (absenceTypes().length === 0) {
+    <div class="px-6 py-10 text-center text-sm text-gray-400">
+      Aucun type d'absence disponible.
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm min-w-[400px]">
+        <thead>
+          <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+            <th class="px-6 py-3 text-left font-medium">Code</th>
+            <th class="px-6 py-3 text-left font-medium">Nom</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (type of absenceTypes(); track type.code) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-[#25509d]/10 text-[#25509d]">
+                  {{ type.code }}
+                </span>
+              </td>
+              <td class="px-6 py-4 font-medium text-gray-800">{{ type.name }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

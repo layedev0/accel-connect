@@ -1,0 +1,85 @@
+<!-- Upcoming birthdays widget -->
+@if (!hasError() && (isLoading() || birthdays().length > 0)) {
+<section class="relative bg-gradient-to-b from-gray-50 to-white py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Section header -->
+    <div class="flex items-center gap-3 mb-10">
+      <div
+        class="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#25509d] to-[#99cfbd] shadow-lg shadow-[#25509d]/20"
+      >
+        <!-- Cake / celebration icon -->
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 2v3m0 0a2 2 0 100 4 2 2 0 000-4zM5 11h14a1 1 0 011 1v3a3 3 0 01-3 3H7a3 3 0 01-3-3v-3a1 1 0 011-1zM3 21h18"
+          />
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl md:text-3xl font-black text-gray-900">
+          @if (hasCelebrationToday()) { 🎉 Joyeux anniversaire ! } @else { Anniversaires à venir }
+        </h2>
+        <p class="text-sm text-gray-500 font-medium">Les 30 prochains jours</p>
+      </div>
+    </div>
+
+    <!-- Loading skeleton -->
+    @if (isLoading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (i of [1, 2, 3]; track i) {
+      <div class="h-24 rounded-2xl bg-gray-100 animate-pulse"></div>
+      }
+    </div>
+    } @else {
+    <!-- Birthday cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (b of birthdays(); track b.userId) {
+      <div
+        class="relative flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+        [class]="
+          b.today
+            ? 'bg-gradient-to-br from-[#25509d]/5 to-[#99cfbd]/10 border-[#99cfbd]/50 shadow-md'
+            : 'bg-white border-gray-100 shadow-sm'
+        "
+      >
+        <!-- Avatar with initials -->
+        <div
+          class="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-[#25509d] to-[#99cfbd] text-white font-bold text-lg shadow-inner"
+        >
+          {{ initials(b) }}
+        </div>
+
+        <!-- Details -->
+        <div class="min-w-0 flex-1">
+          <p class="font-bold text-gray-900 truncate">{{ fullName(b) }}</p>
+          <p class="text-sm text-gray-500 truncate">
+            {{ dateLabel(b) }}
+            @if (b.turningAge != null) {
+            <span class="text-gray-400">· {{ b.turningAge }} ans</span>
+            }
+          </p>
+          @if (b.departmentName) {
+          <p class="text-xs text-gray-400 truncate mt-0.5">{{ b.departmentName }}</p>
+          }
+        </div>
+
+        <!-- Countdown badge -->
+        <span
+          class="flex-shrink-0 self-start px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
+          [class]="
+            b.today
+              ? 'bg-[#99cfbd]/30 text-[#25509d]'
+              : 'bg-gray-100 text-gray-600'
+          "
+        >
+          {{ countdownLabel(b) }}
+        </span>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</section>
+}

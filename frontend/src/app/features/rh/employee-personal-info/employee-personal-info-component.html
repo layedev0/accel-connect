@@ -1,0 +1,276 @@
+<div class="personal-info-page">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">Informations personnelles</h1>
+    @if (employeeDetailsId() && !editing()) {
+      <button
+        type="button"
+        (click)="startEditing()"
+        class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white bg-[#25509d] hover:bg-[#1e3d7a] transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Modifier
+      </button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      {{ error() }}
+      <a routerLink="/rh-admin/employees" class="ml-2 font-medium underline">Retour à la liste</a>
+    </div>
+  } @else if (loading()) {
+    <div class="rounded-2xl border border-gray-200 bg-white p-12 text-center text-gray-500">
+      Chargement des informations...
+    </div>
+  } @else if (employeeDetailsId() && !editing() && personalInfoData()) {
+    <!-- Read-only view when personal info exists -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="p-6 md:p-8">
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Type de contrat</p>
+            <p class="text-sm text-gray-900 uppercase">{{ personalInfoData()?.statut || '—' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">N° de carte d'identité</p>
+            <p class="text-sm text-gray-900">{{ personalInfoData()?.cni || '—' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Téléphone</p>
+            <p class="text-sm text-gray-900">{{ personalInfoData()?.telephone || '—' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Date de naissance</p>
+            <p class="text-sm text-gray-900">{{ formatDate(personalInfoData()?.dateNaissance) }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Situation matrimoniale</p>
+            <p class="text-sm text-gray-900">{{ getMaritalStatusLabel(personalInfoData()?.maritalStatus) }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Date d'arrivée</p>
+            <p class="text-sm text-gray-900">{{ formatDate(personalInfoData()?.dateAdhesion) }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Sexe</p>
+            <p class="text-sm text-gray-900">{{ getGenderLabel(personalInfoData()?.sexe) }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Département</p>
+            <p class="text-sm text-gray-900">{{ personalInfoData()?.departmentName || '—' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Titre du poste</p>
+            <p class="text-sm text-gray-900">{{ personalInfoData()?.jobTitleName || '—' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Type de poste</p>
+            <p class="text-sm text-gray-900">{{ personalInfoData()?.jobCategoryName || '—' }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Code convention</p>
+            <p class="text-sm text-gray-900">
+              @if (personalInfoData()?.jobCategoryCode) {
+                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[#25509d]">
+                  {{ personalInfoData()?.jobCategoryCode }}
+                </span>
+              } @else { — }
+            </p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-gray-400 uppercase">Salaire de base</p>
+            <p class="text-sm font-medium text-gray-900">
+              {{ personalInfoData()?.jobCategorySalaireBase != null ? (personalInfoData()?.jobCategorySalaireBase | number:'1.0-0') + ' FCFA' : '—' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else if (form) {
+    <form [formGroup]="form" (ngSubmit)="save()" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="p-6 md:p-8">
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Type de contrat</label>
+            <select
+              formControlName="statut"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            >
+              <option value="">-- Sélectionner --</option>
+              @for (opt of contractTypeOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-2 md:col-span-2 lg:col-span-1">
+            <label class="block text-sm font-medium text-gray-700">
+              N° de carte d'identité
+            </label>
+            <input
+              formControlName="ssnOrId"
+              type="text"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+              placeholder="Numéro"
+            />
+          </div>
+
+           <div class="space-y-2 md:col-span-2 lg:col-span-1">
+            <label class="block text-sm font-medium text-gray-700">
+              Téléphone
+            </label>
+            <input
+              formControlName="telephone"
+              type="text"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+              placeholder="771234567"
+            />
+            <p class="text-xs text-gray-500">Format Sénégal : 70, 76, 77 ou 78 suivi de 7 chiffres (ex: 771234567)</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Date de naissance <span class="text-[#25509d]">*</span>
+            </label>
+            <input
+              formControlName="dateOfBirth"
+              type="date"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            />
+            @if (form.get('dateOfBirth')?.invalid && form.get('dateOfBirth')?.touched) {
+              <p class="text-xs text-red-600">Champ obligatoire</p>
+            }
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Situation matrimoniale</label>
+            <select
+              formControlName="maritalStatus"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            >
+              @for (opt of maritalStatusOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Date d'arrivée <span class="text-[#25509d]">*</span>
+            </label>
+            <input
+              formControlName="dateAdhesion"
+              type="date"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            />
+            @if (form.get('dateAdhesion')?.invalid && form.get('dateAdhesion')?.touched) {
+  <p class="text-xs text-red-600">Champ obligatoire</p>
+  }
+  </div>
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-gray-700">
+      Sexe <span class="text-[#25509d]">*</span>
+    </label>
+    <select
+      formControlName="sexe"
+      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+    >
+      @for (opt of genderOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Département</label>
+            <select
+              formControlName="departmentId"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            >
+              <option [ngValue]="null">-- Sélectionner --</option>
+              @for (dept of departments(); track dept.id) {
+                <option [ngValue]="dept.id">{{ dept.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Titre du poste</label>
+            <select
+              formControlName="jobTitleId"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            >
+              <option [ngValue]="null">-- Sélectionner --</option>
+              @for (jt of jobTitles(); track jt.id) {
+                <option [ngValue]="jt.id">{{ jt.jobTitle }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Type de poste</label>
+            <select
+              formControlName="jobCategoryId"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#25509d] focus:outline-none focus:ring-2 focus:ring-[#25509d]/20"
+            >
+              <option [ngValue]="null">-- Sélectionner --</option>
+              @for (jc of jobCategories(); track jc.id) {
+                <option [ngValue]="jc.id">{{ jc.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-500">Code convention</label>
+            <div class="flex items-center h-9 px-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm">
+              @if (selectedCategory()?.categoryCode) {
+                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[#25509d]">
+                  {{ selectedCategory()!.categoryCode }}
+                </span>
+              } @else {
+                <span class="text-gray-400 italic text-xs">Auto-rempli selon le type de poste</span>
+              }
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-500">Salaire de base</label>
+            <div class="flex items-center h-9 px-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm">
+              @if (selectedCategory()?.salaireBase != null) {
+                <span class="font-medium text-gray-700">{{ selectedCategory()!.salaireBase | number:'1.0-0' }} FCFA</span>
+              } @else {
+                <span class="text-gray-400 italic text-xs">Auto-rempli selon le type de poste</span>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <p class="mt-6 text-xs text-gray-500">* Champ obligatoire</p>
+      </div>
+
+      <div class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 md:flex-row md:justify-end md:gap-4">
+        @if (employeeDetailsId()) {
+          <button
+            type="button"
+            (click)="cancelEditing()"
+            class="rounded-lg px-4 py-2.5 text-sm font-medium text-[#25509d] border-2 border-[#25509d] bg-white hover:bg-[#25509d]/5 transition-colors"
+          >
+            Annuler
+          </button>
+        }
+        <button
+          type="submit"
+          [disabled]="saving()"
+          class="rounded-lg px-4 py-2.5 text-sm font-medium text-white bg-[#99cfbd] hover:bg-[#7ab8a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          {{ saving() ? 'Sauvegarde...' : 'SAUVEGARDER' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

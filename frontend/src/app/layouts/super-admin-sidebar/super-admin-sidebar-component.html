@@ -1,0 +1,65 @@
+<aside
+  class="sa-sidebar flex flex-col self-stretch bg-white border-r border-gray-200 transition-all duration-300 shrink-0 shadow-sm min-h-full"
+  [class.w-64]="!collapsed()"
+  [class.w-20]="collapsed()"
+>
+  <!-- Brand / role -->
+  <div class="p-4 border-b border-gray-100">
+    <div class="flex items-center gap-3">
+      <div class="relative shrink-0">
+        <div
+          class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#20264E] to-[#25509d] flex items-center justify-center text-white"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+        </div>
+        <button
+          (click)="toggleCollapse()"
+          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#25509d] text-white flex items-center justify-center hover:bg-[#1e3d7a] transition-colors z-10"
+          [title]="collapsed() ? 'Expand' : 'Collapse'"
+        >
+          <svg
+            class="w-3.5 h-3.5 transition-transform"
+            [class.rotate-180]="collapsed()"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+      @if (!collapsed()) {
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold text-gray-900 truncate">Super Admin</p>
+          <p class="text-xs text-gray-500 truncate">{{ getDisplayRole() }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto py-2">
+    @for (item of navItems; track item.label) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="!bg-[#25509d] !text-white"
+        class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#25509d]/5 hover:text-[#25509d] transition-colors mx-2 rounded-lg [&.router-link-active]:hover:!bg-[#25509d] [&.router-link-active]:hover:!text-white"
+        [title]="collapsed() ? item.label : ''"
+      >
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.iconPath" />
+        </svg>
+        @if (!collapsed()) {
+          <span class="truncate">{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+</aside>

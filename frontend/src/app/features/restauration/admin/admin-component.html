@@ -1,0 +1,980 @@
+<div class="min-h-screen bg-gradient-to-br from-[#FFFFFF] via-[#E1E1E1] to-[#99CFBD] p-4 md:p-6">
+  <div class="max-w-[1800px] mx-auto">
+    <!-- 🎯 HEADER -->
+    <div class="mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-[#25509D] to-[#20264E] rounded-2xl flex items-center justify-center shadow-xl">
+            <i class="fas fa-crown text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl md:text-4xl font-black text-[#20264E]">Admin Dashboard</h1>
+            <p class="text-[#303131] font-medium">
+              {{ dashboardData() ? formatDate(dashboardData()!.date) : 'Chargement...' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- 🔒 BOUTON DE VALIDATION - ACTIF UNIQUEMENT LE VENDREDI -->
+          <button (click)="openPaymentModal()" [disabled]="!canValidatePayments()"
+            [class]="canValidatePayments()
+              ? 'px-4 py-2.5 cursor-pointer bg-gradient-to-r from-[#99CFBD] to-[#99CFBD]/80 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center gap-2'
+              : 'px-4 py-2.5 cursor-not-allowed bg-gray-400 text-gray-200 rounded-xl font-bold flex items-center gap-2 opacity-60'" [title]="canValidatePayments()
+              ? 'Clôturer les commandes de la semaine'
+              : paymentValidationState()?.message || 'Disponible uniquement le vendredi'">
+            <i [class]="canValidatePayments() ? 'fas fa-money-bill-wave' : 'fas fa-lock'"></i>
+            <span class="hidden md:inline">
+              {{ canValidatePayments() ? 'Clôturer Semaine' : 'Vendredi uniquement' }}
+            </span>
+            @if (!canValidatePayments() && paymentValidationState()?.nextFriday) {
+            <span class="hidden lg:inline text-xs">
+              ({{ formatDate(paymentValidationState()!.nextFriday!) }})
+            </span>
+            }
+          </button>
+
+          <!-- 🔔 NOTIFIER LES MENUS DU JOUR -->
+          <button (click)="notifyMenuAvailable()" [disabled]="isSendingMenuNotif()"
+            class="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            title="Notifier tous les utilisateurs que les menus sont disponibles">
+            <i [class]="isSendingMenuNotif() ? 'fas fa-spinner fa-spin' : 'fas fa-bell'"></i>
+            <span class="hidden md:inline">{{ isSendingMenuNotif() ? 'Envoi...' : 'Notifier les menus' }}</span>
+          </button>
+
+          <button (click)="openExportModal()"
+            class="px-4 py-2.5 bg-gradient-to-r from-[#99CFBD] to-[#99CFBD]/80 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer">
+            <i class="fas fa-file-excel"></i>
+            <span class="hidden md:inline">Téléchargements</span>
+          </button>
+
+          <!-- ➕ AJOUTER UNE COMMANDE -->
+          <button (click)="openAddOrderModal()"
+            class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer">
+            <i class="fas fa-plus"></i>
+            <span class="hidden md:inline">Ajouter commande</span>
+          </button>
+
+          <!-- 📅 DATE PICKER -->
+          <input type="date" [value]="filters().selectedDate" (change)="onDateChange($any($event.target).value)"
+            class="px-4 py-2.5 border-2 border-[#E1E1E1] rounded-xl focus:border-[#25509D] focus:outline-none font-bold shadow-lg bg-white" />
+
+          <!-- 🔄 BOUTON ACTUALISER -->
+          <button (click)="loadData()"
+            class="px-4 py-2.5 bg-gradient-to-r from-[#25509D] to-[#20264E] text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center gap-2">
+            <i class="fas fa-sync"></i>
+            <span class="hidden md:inline">Actualiser</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 📊 STATS GLOBALES -->
+      @if (dashboardData()) {
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl p-4 shadow-lg border-2 border-[#99CFBD]/50">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-[#99CFBD]/20 rounded-xl flex items-center justify-center">
+              <i class="fas fa-dollar-sign text-[#99CFBD] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">TOTAL</p>
+              <p class="text-xl font-black text-[#99CFBD]">
+                {{ formatAmount(dashboardData()!.globalStats.totalAmount) }}
+              </p>
+              <p class="text-xs font-bold text-[#303131]">FCFA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-lg border-2 border-[#25509D]/50">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-[#25509D]/20 rounded-xl flex items-center justify-center">
+              <i class="fas fa-receipt text-[#25509D] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">À PAYER</p>
+              <p class="text-xl font-black text-[#25509D]">
+                {{ formatAmount(dashboardData()!.globalStats.totalAmount + dashboardData()!.globalStats.totalOrders *
+                1000) }}
+              </p>
+              <p class="text-xs font-bold text-[#303131]">FCFA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-lg border-2 border-[#E84141]/50">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-[#E84141]/20 rounded-xl flex items-center justify-center">
+              <i class="fas fa-gift text-[#E84141] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">SUBVENTION</p>
+              <p class="text-xl font-black text-[#E84141]">
+                {{ formatAmount(dashboardData()!.globalStats.totalOrders * 1000) }}
+              </p>
+              <p class="text-xs font-bold text-[#303131]">FCFA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-lg border-2 border-[#20264E]/50">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-[#20264E]/20 rounded-xl flex items-center justify-center">
+              <i class="fas fa-shopping-cart text-[#20264E] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">COMMANDES</p>
+              <p class="text-xl font-black text-[#20264E]">
+                {{ dashboardData()!.globalStats.totalOrders }}
+              </p>
+              <p class="text-xs font-bold text-[#303131]">Total</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    @if (isLoading()) {
+    <!-- 🔄 CHARGEMENT -->
+    <div class="flex justify-center items-center py-20">
+      <div class="relative w-20 h-20">
+        <div class="absolute inset-0 rounded-full border-4 border-[#25509D]/20 animate-ping opacity-20"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-[#25509D] border-t-transparent animate-spin"></div>
+      </div>
+    </div>
+    }
+
+    @if (!isLoading() && dashboardData()) {
+    <!-- 🏪 MINI CARDS RESTAURANTS -->
+    <div class="mb-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+        <h2 class="text-2xl font-black text-[#20264E] flex items-center gap-2">
+          <i class="fas fa-store text-[#E84141]"></i>
+          Restaurants
+        </h2>
+        <button (click)="selectRestaurant(null)" [class]="filters().selectedRestaurantId === null
+              ? 'px-4 py-2 bg-[#25509D] text-white rounded-xl font-bold shadow-lg'
+              : 'px-4 py-2 bg-[#E1E1E1] text-[#303131] rounded-xl font-bold hover:bg-[#E1E1E1]/70'">
+          Tous les restaurants
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (restaurant of filteredRestaurants(); track restaurant.restaurantId) {
+        <div [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                ? 'bg-gradient-to-br from-[#25509D] to-[#20264E] text-white cursor-pointer'
+                : 'bg-white hover:shadow-xl cursor-pointer'"
+          class="rounded-2xl p-5 shadow-lg transition-all border-2 border-transparent hover:border-[#25509D]/30"
+          (click)="selectRestaurant(restaurant.restaurantId)">
+
+          <div class="flex items-center justify-between gap-4 mb-3">
+            <div class="flex-1 min-w-0">
+              <h3 [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'text-white'
+                      : 'text-[#20264E]'" class="font-black text-lg truncate">
+                {{ restaurant.restaurantName }}
+              </h3>
+              <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'text-white/80'
+                      : 'text-[#303131]'" class="text-sm font-medium">
+                {{ restaurant.totalOrders }} commande(s)
+              </p>
+            </div>
+
+            <div class="flex gap-2 flex-shrink-0">
+              <button (click)="openRestaurantStats(restaurant); $event.stopPropagation()" [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'bg-white/20 hover:bg-white/30'
+                      : 'bg-[#25509D]/10 hover:bg-[#25509D]/20'"
+                class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+                title="Voir les statistiques">
+                <i [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                        ? 'fas fa-chart-bar text-white'
+                        : 'fas fa-chart-bar text-[#25509D]'"></i>
+              </button>
+
+              <button (click)="exportRestaurant(restaurant); $event.stopPropagation()" [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'bg-white/20 hover:bg-white/30'
+                      : 'bg-[#99CFBD]/20 hover:bg-[#99CFBD]/30'"
+                class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors" title="Exporter en CSV">
+                <i [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                        ? 'fas fa-download text-white'
+                        : 'fas fa-download text-[#99CFBD]'"></i>
+              </button>
+
+              <button (click)="notifyRestaurantDelivered(restaurant.restaurantId, $event)"
+                [disabled]="notifyingRestaurantId() === restaurant.restaurantId"
+                [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                        ? 'bg-orange-400/80 hover:bg-orange-400'
+                        : 'bg-orange-100 hover:bg-orange-200'"
+                class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Notifier les commandeurs que le repas est arrivé">
+                <i [class]="notifyingRestaurantId() === restaurant.restaurantId
+                        ? 'fas fa-spinner fa-spin text-orange-600'
+                        : (filters().selectedRestaurantId === restaurant.restaurantId ? 'fas fa-bell text-white' : 'fas fa-bell text-orange-500')"></i>
+              </button>
+            </div>
+          </div>
+
+          <div [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                  ? 'bg-white/10'
+                  : 'bg-gradient-to-br from-[#99CFBD]/10 to-[#99CFBD]/20 border border-[#99CFBD]/30'"
+            class="rounded-xl p-3">
+            <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                    ? 'text-white/70'
+                    : 'text-[#303131]'" class="text-xs font-bold mb-1">
+              MONTANT TOTAL
+            </p>
+            <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                    ? 'text-white'
+                    : 'text-[#99CFBD]'" class="text-2xl font-black">
+              {{ formatAmount(restaurant.totalAmount) }}
+            </p>
+            <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                    ? 'text-white/80'
+                    : 'text-[#303131]'" class="text-xs font-bold">
+              FCFA
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <div [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                    ? 'bg-white/10'
+                    : 'bg-[#99CFBD]/10'" class="rounded-lg p-2 text-center">
+              <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'text-white/70'
+                      : 'text-[#303131]'" class="text-xs font-semibold">
+                Confirmées
+              </p>
+              <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'text-white'
+                      : 'text-[#99CFBD]'" class="text-xl font-black">
+                {{ restaurant.confirmedCount }}
+              </p>
+            </div>
+
+            <div [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                    ? 'bg-white/10'
+                    : 'bg-[#E84141]/10'" class="rounded-lg p-2 text-center">
+              <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'text-white/70'
+                      : 'text-[#303131]'" class="text-xs font-semibold">
+                Annulées
+              </p>
+              <p [class]="filters().selectedRestaurantId === restaurant.restaurantId
+                      ? 'text-white'
+                      : 'text-[#E84141]'" class="text-xl font-black">
+                {{ restaurant.cancelledCount }}
+              </p>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- 🔍 BARRE DE RECHERCHE -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 mb-6 border-2 border-[#E1E1E1]">
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[#303131]/40"></i>
+          <input type="text" [value]="filters().searchTerm" (input)="onSearch($any($event.target).value)"
+            placeholder="Rechercher par nom, plat ou restaurant..."
+            class="w-full pl-12 pr-4 py-3 border-2 border-[#E1E1E1] rounded-xl focus:border-[#25509D] focus:outline-none font-medium" />
+        </div>
+
+        <label
+          class="flex items-center gap-2 px-4 py-3 bg-[#E1E1E1]/30 rounded-xl cursor-pointer hover:bg-[#E1E1E1]/50 transition-colors">
+          <input type="checkbox" [checked]="filters().showCancelled" (change)="updateShowCancelled($event)"
+            class="w-5 h-5 text-[#25509D] rounded accent-[#25509D]" />
+          <span class="font-bold text-[#20264E]">Afficher annulées</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 👤 LISTE DES UTILISATEURS -->
+    <div>
+      <h2 class="text-2xl font-black text-[#20264E] mb-4 flex items-center gap-2">
+        <i class="fas fa-users text-[#25509D]"></i>
+        Commandes Utilisateurs ({{ filteredUsers().length }})
+      </h2>
+
+      <div class="space-y-4">
+        @for (user of filteredUsers(); track user.userId) {
+        <div
+          class="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-[#E1E1E1] hover:border-[#25509D]/30 hover:shadow-xl transition-all">
+
+          <!-- Header utilisateur -->
+          <div class="bg-gradient-to-r from-[#25509D] to-[#20264E] p-5">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg flex-shrink-0">
+                  {{ user.username.charAt(0).toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="text-xl sm:text-2xl font-black text-white truncate">
+                    {{ user.username }}
+                  </h3>
+                  <p class="text-white/80 text-sm font-medium truncate">{{ user.email }}</p>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <span class="px-3 py-1 bg-white/20 rounded-lg text-xs font-bold text-white truncate">
+                      {{ user.restaurants.join(', ') }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-left sm:text-right w-full sm:w-auto">
+                <p class="text-sm text-white/80 font-bold mb-1">TOTAL À PAYER</p>
+                <p class="text-2xl sm:text-3xl font-black text-white">
+                  {{ formatAmount(user.totalAmount) }}
+                </p>
+                <p class="text-sm text-white/90 font-bold">FCFA</p>
+                @if (user.balance !== 0) {
+                <p [class]="'text-xs font-bold mt-1 ' + getBalanceColor(user.balance)">
+                  Solde: {{ formatAmount(user.balance) }} FCFA
+                </p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Corps -->
+          <div class="p-5">
+            <!-- Actions admin pour gérer les commandes -->
+            <div class="mb-4 flex items-center gap-2 flex-wrap">
+              @for (order of user.orders; track order.id) {
+              @if (order.status === 'CONFIRMED') {
+              <button (click)="openEditOrderModal(order)"
+                class="px-3 py-2 bg-[#25509D]/10 hover:bg-[#25509D]/20 text-[#25509D] rounded-lg font-bold transition-all flex items-center gap-2 text-sm cursor-pointer"
+                title="Modifier les plats de cette commande">
+                <i class="fas fa-edit"></i>
+                <span>Modifier #{{ order.id }}</span>
+              </button>
+              <button (click)="adminCancelOrder(order.id)"
+                class="px-3 py-2 bg-[#E84141]/10 hover:bg-[#E84141]/20 text-[#E84141] rounded-lg font-bold transition-all flex items-center gap-2 text-sm cursor-pointer"
+                title="Annuler cette commande (ex: non livrée, consommée par erreur)">
+                <i class="fas fa-ban"></i>
+                <span>Annuler commande #{{ order.id }}</span>
+              </button>
+              } @else if (order.status === 'CANCELLED') {
+              <button (click)="reactivateOrder(order.id)"
+                class="px-3 py-2 bg-[#99CFBD]/10 hover:bg-[#99CFBD]/20 text-[#99CFBD] rounded-lg font-bold transition-all flex items-center gap-2 text-sm cursor-pointer"
+                title="Réactiver cette commande annulée">
+                <i class="fas fa-undo"></i>
+                <span>Réactiver #{{ order.id }}</span>
+              </button>
+              <button (click)="openEditOrderModal(order)"
+                class="px-3 py-2 bg-[#25509D]/10 hover:bg-[#25509D]/20 text-[#25509D] rounded-lg font-bold transition-all flex items-center gap-2 text-sm cursor-pointer"
+                title="Recréer cette commande avec de nouveaux plats">
+                <i class="fas fa-edit"></i>
+                <span>Recréer #{{ order.id }}</span>
+              </button>
+              <span class="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg font-bold text-sm flex items-center gap-2">
+                <i class="fas fa-times-circle"></i>
+                Commande annulée
+              </span>
+              }
+              }
+            </div>
+
+            <!-- Plats commandés -->
+            <div class="mb-4">
+              <h4 class="text-sm font-black text-[#20264E] mb-3 flex items-center gap-2">
+                <i class="fas fa-utensils text-[#E84141]"></i>
+                PLATS COMMANDÉS
+              </h4>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                @for (order of user.orders; track order.id) {
+                @for (item of order.items; track item.id) {
+                <div [class]="order.status === 'CONFIRMED'
+                            ? 'bg-gradient-to-br from-[#E84141]/10 to-[#6B140F]/10 border-[#E84141]/30'
+                            : 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-400 opacity-60'"
+                  class="rounded-lg p-3 border">
+
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex-1 min-w-0">
+                      <p [class]="order.status === 'CONFIRMED' ? 'text-[#20264E]' : 'text-gray-600'"
+                        class="font-bold text-sm truncate">
+                        {{ item.mealName }}
+                      </p>
+                      <p class="text-xs text-[#303131] truncate">{{ item.restaurantName }}</p>
+                      <p class="text-xs text-[#303131] font-bold mt-1">
+                        {{ formatAmount(item.unitPrice) }} FCFA × {{ item.quantity }}
+                      </p>
+                    </div>
+                    <span [class]="order.status === 'CONFIRMED' ? 'text-[#E84141]' : 'text-gray-500'"
+                      class="text-2xl font-black flex-shrink-0">
+                      ×{{ item.quantity }}
+                    </span>
+                  </div>
+
+                  @if (order.status === 'CONFIRMED') {
+                  <div class="flex items-center gap-1 mt-2">
+                    <button (click)="updateOrderItemQuantity(order.id, item.id, item.mealName, item.quantity)"
+                      class="flex-1 px-2 py-1 bg-[#25509D]/10 hover:bg-[#25509D]/20 text-[#25509D] rounded text-xs font-bold transition-all cursor-pointer"
+                      title="Modifier la quantité (ex: reçu moins que commandé)">
+                      <i class="fas fa-edit mr-1"></i>
+                      Modifier
+                    </button>
+                    <button (click)="removeOrderItem(order.id, item.id, item.mealName)"
+                      class="flex-1 px-2 py-1 bg-[#E84141]/10 hover:bg-[#E84141]/20 text-[#E84141] rounded text-xs font-bold transition-all cursor-pointer"
+                      title="Supprimer ce plat (ex: non livré, consommé par erreur)">
+                      <i class="fas fa-trash mr-1"></i>
+                      Supprimer
+                    </button>
+                  </div>
+                  } @else {
+                  <div class="mt-2 px-2 py-1 bg-gray-300 rounded text-center">
+                    <span class="text-xs font-bold text-gray-600">
+                      <i class="fas fa-ban mr-1"></i>
+                      Commande annulée
+                    </span>
+                  </div>
+                  }
+                </div>
+                }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      @if (filteredUsers().length === 0) {
+      <div class="text-center py-12 bg-white rounded-2xl shadow-lg border-2 border-[#E1E1E1]">
+        <div class="text-6xl mb-4">🔍</div>
+        <h3 class="text-2xl font-black text-[#20264E] mb-2">Aucun résultat</h3>
+        <p class="text-[#303131]">Essayez de modifier vos filtres</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>
+
+<!-- MODAL EXPORT HEBDOMADAIRE -->
+@if (modalService.showWeeklyExportModal()) {
+<app-weekly-export-modal (close)="closeExportModal()"></app-weekly-export-modal>
+}
+
+<!-- 📊 MODAL STATISTIQUES RESTAURANT -->
+@if (showStatsModal() && selectedRestaurantStats()) {
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  (click)="closeStatsModal()">
+
+  <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header Modal -->
+    <div class="bg-gradient-to-r from-[#25509D] to-[#20264E] p-6 sticky top-0 z-10">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+            <i class="fas fa-chart-bar text-white text-3xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-black text-white">
+              {{ selectedRestaurantStats()!.restaurant.restaurantName }}
+            </h2>
+            <p class="text-white/80 font-medium">Statistiques détaillées</p>
+          </div>
+        </div>
+        <button (click)="closeStatsModal()"
+          class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-xl cursor-pointer flex items-center justify-center transition-colors">
+          <i class="fas fa-times text-white text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Corps Modal -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+      <!-- Stats générales -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-[#99CFBD]/10 to-[#99CFBD]/20 rounded-2xl p-4 border border-[#99CFBD]/30">
+          <p class="text-xs font-bold text-[#303131] mb-1">COMMANDES TOTALES</p>
+          <p class="text-3xl font-black text-[#99CFBD]">
+            {{ selectedRestaurantStats()!.restaurant.totalOrders }}
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#99CFBD]/10 to-[#99CFBD]/20 rounded-2xl p-4 border border-[#99CFBD]/30">
+          <p class="text-xs font-bold text-[#303131] mb-1">CONFIRMÉES</p>
+          <p class="text-3xl font-black text-[#99CFBD]">
+            {{ selectedRestaurantStats()!.restaurant.confirmedCount }}
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#E84141]/10 to-[#6B140F]/10 rounded-2xl p-4 border border-[#E84141]/30">
+          <p class="text-xs font-bold text-[#303131] mb-1">ANNULÉES</p>
+          <p class="text-3xl font-black text-[#E84141]">
+            {{ selectedRestaurantStats()!.restaurant.cancelledCount }}
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#25509D]/10 to-[#20264E]/10 rounded-2xl p-4 border border-[#25509D]/30">
+          <p class="text-xs font-bold text-[#303131] mb-1">MONTANT TOTAL</p>
+          <p class="text-2xl font-black text-[#25509D]">
+            {{ formatAmount(selectedRestaurantStats()!.restaurant.totalAmount) }}
+          </p>
+          <p class="text-xs font-bold text-[#303131]">FCFA</p>
+        </div>
+      </div>
+
+      <!-- Liste des plats -->
+      <div>
+        <h3 class="text-xl font-black text-[#20264E] mb-4 flex items-center gap-2">
+          <i class="fas fa-utensils text-[#E84141]"></i>
+          Détail des plats commandés
+        </h3>
+
+        @if (selectedRestaurantStats()!.meals.length > 0) {
+        <div class="space-y-3">
+          @for (meal of selectedRestaurantStats()!.meals; track meal.mealName) {
+          <div
+            class="bg-gradient-to-r from-[#E1E1E1]/30 to-[#E1E1E1]/10 rounded-xl p-4 border border-[#E1E1E1] hover:border-[#25509D]/30 transition-all">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div
+                  class="w-14 h-14 bg-gradient-to-br from-[#E84141] to-[#6B140F] rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-utensils text-white text-xl"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h4 class="font-black text-lg text-[#20264E] truncate">{{ meal.mealName }}</h4>
+                  <div class="flex items-center gap-4 mt-1 flex-wrap">
+                    <span class="text-sm font-bold text-[#303131]">
+                      <i class="fas fa-shopping-cart text-[#99CFBD] mr-1"></i>
+                      {{ meal.quantity }} commandé(s)
+                    </span>
+                    <span class="text-sm font-bold text-[#99CFBD]">
+                      {{ formatAmount(meal.totalAmount) }} FCFA
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-[#E84141]/10 rounded-lg px-4 py-2 flex-shrink-0">
+                <p class="text-3xl font-black text-[#E84141]">×{{ meal.quantity }}</p>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="text-center py-12 bg-[#E1E1E1]/20 rounded-2xl">
+          <div class="text-5xl mb-3">🍽️</div>
+          <p class="text-[#303131] font-medium">Aucun plat commandé pour ce restaurant</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Footer Modal -->
+    <div class="bg-[#E1E1E1]/30 p-4 sticky bottom-0">
+      <div class="flex justify-end gap-3">
+        <button (click)="exportRestaurant(selectedRestaurantStats()!.restaurant)"
+          class="px-6 cursor-pointer py-3 bg-gradient-to-r from-[#99CFBD] to-[#99CFBD]/80 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2">
+          <i class="fas fa-download"></i>
+          Exporter CSV
+        </button>
+        <button (click)="closeStatsModal()"
+          class="px-6 cursor-pointer py-3 bg-gradient-to-r from-[#25509D] to-[#20264E] text-white rounded-xl font-bold hover:shadow-lg transition-all">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- 💰 MODAL PAIEMENT ET VALIDATION -->
+@if (showPaymentModal()) {
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  (click)="closePaymentModal()">
+
+  <div class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header Modal -->
+    <div class="bg-gradient-to-r from-[#25509D] to-[#20264E] p-6 sticky top-0 z-10">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+            <i class="fas fa-money-bill-wave text-white text-3xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-black text-white">
+              Clôture Hebdomadaire
+            </h2>
+            <p class="text-white/80 font-medium">Validation et téléchargement du rapport Excel</p>
+          </div>
+        </div>
+        <button (click)="closePaymentModal()"
+          class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-xl cursor-pointer flex items-center justify-center transition-colors">
+          <i class="fas fa-times text-white text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Corps Modal -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      @if (isLoadingPayment()) {
+      <!-- Chargement -->
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="relative w-24 h-24 mb-6">
+          <div class="absolute inset-0 rounded-full border-4 border-[#25509D]/20 animate-ping opacity-20"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-[#25509D] border-t-transparent animate-spin"></div>
+        </div>
+        <p class="text-xl font-bold text-[#20264E]">Chargement du récapitulatif...</p>
+      </div>
+      } @else if (paymentSummary()) {
+      <!-- Période de paiement -->
+      <div
+        class="bg-gradient-to-br from-[#99CFBD]/10 to-[#99CFBD]/20 rounded-2xl p-6 mb-6 border-2 border-[#99CFBD]/30">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fas fa-calendar-alt text-[#99CFBD] text-2xl"></i>
+          <h3 class="text-xl font-black text-[#20264E]">Période de clôture</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white rounded-xl p-4">
+            <p class="text-xs font-bold text-[#303131] mb-2">DÉBUT</p>
+            <p class="text-lg font-black text-[#25509D]">
+              {{ formatDate(paymentSummary()!.startDate) }}
+            </p>
+          </div>
+          <div class="bg-white rounded-xl p-4">
+            <p class="text-xs font-bold text-[#303131] mb-2">FIN</p>
+            <p class="text-lg font-black text-[#25509D]">
+              {{ formatDate(paymentSummary()!.endDate) }}
+            </p>
+          </div>
+          <div class="bg-white rounded-xl p-4">
+            <p class="text-xs font-bold text-[#303131] mb-2">DERNIER PAIEMENT</p>
+            <p class="text-lg font-black text-[#E84141]">
+              {{ paymentSummary()!.lastPaymentDate ? formatDate(paymentSummary()!.lastPaymentDate!) : 'Aucun' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques globales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-[#99CFBD]/10 to-[#99CFBD]/20 rounded-2xl p-5 border-2 border-[#99CFBD]/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-[#99CFBD]/30 rounded-xl flex items-center justify-center">
+              <i class="fas fa-dollar-sign text-[#99CFBD] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">TOTAL AVEC SUBVENTION</p>
+            </div>
+          </div>
+          <p class="text-3xl font-black text-[#99CFBD]">
+            {{ formatAmount(paymentSummary()!.globalStats.totalAmountWithSubsidy) }}
+          </p>
+          <p class="text-sm font-bold text-[#303131]">FCFA</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#25509D]/10 to-[#20264E]/10 rounded-2xl p-5 border-2 border-[#25509D]/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-[#25509D]/30 rounded-xl flex items-center justify-center">
+              <i class="fas fa-hand-holding-usd text-[#25509D] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">À PAYER RESTAURANTS</p>
+            </div>
+          </div>
+          <p class="text-3xl font-black text-[#25509D]">
+            {{ formatAmount(paymentSummary()!.globalStats.totalAmountWithoutSubsidy) }}
+          </p>
+          <p class="text-sm font-bold text-[#303131]">FCFA</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#E84141]/10 to-[#6B140F]/10 rounded-2xl p-5 border-2 border-[#E84141]/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-[#E84141]/30 rounded-xl flex items-center justify-center">
+              <i class="fas fa-gift text-[#E84141] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">SUBVENTION TOTALE</p>
+            </div>
+          </div>
+          <p class="text-3xl font-black text-[#E84141]">
+            {{ formatAmount(paymentSummary()!.globalStats.totalSubsidy) }}
+          </p>
+          <p class="text-sm font-bold text-[#303131]">FCFA</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#20264E]/10 to-[#20264E]/20 rounded-2xl p-5 border-2 border-[#20264E]/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-[#20264E]/30 rounded-xl flex items-center justify-center">
+              <i class="fas fa-truck text-[#20264E] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">FRAIS DE LIVRAISON</p>
+            </div>
+          </div>
+          <p class="text-3xl font-black text-[#20264E]">
+            {{ formatAmount(paymentSummary()!.globalStats.totalDeliveryFees) }}
+          </p>
+          <p class="text-sm font-bold text-[#303131]">FCFA</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#99CFBD]/10 to-[#99CFBD]/20 rounded-2xl p-5 border-2 border-[#99CFBD]/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-[#99CFBD]/30 rounded-xl flex items-center justify-center">
+              <i class="fas fa-shopping-cart text-[#99CFBD] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">COMMANDES TOTALES</p>
+            </div>
+          </div>
+          <p class="text-3xl font-black text-[#99CFBD]">
+            {{ paymentSummary()!.globalStats.totalOrders }}
+          </p>
+          <p class="text-sm font-bold text-[#303131]">Commandes</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#25509D]/10 to-[#25509D]/20 rounded-2xl p-5 border-2 border-[#25509D]/30">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 bg-[#25509D]/30 rounded-xl flex items-center justify-center">
+              <i class="fas fa-users text-[#25509D] text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-[#303131]">UTILISATEURS</p>
+            </div>
+          </div>
+          <p class="text-3xl font-black text-[#25509D]">
+            {{ paymentSummary()!.globalStats.totalUsers }}
+          </p>
+          <p class="text-sm font-bold text-[#303131]">Utilisateurs</p>
+        </div>
+      </div>
+
+      <!-- Info Excel -->
+      <div class="bg-gradient-to-r from-[#25509D]/10 to-[#20264E]/10 rounded-2xl p-6 border-2 border-[#25509D]/30">
+        <div class="flex items-start gap-4">
+          <div
+            class="w-16 h-16 bg-gradient-to-br from-[#25509D] to-[#20264E] rounded-xl flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-file-excel text-white text-2xl"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="text-lg font-black text-[#20264E] mb-2">📥 Rapport Excel Automatique</h4>
+            <p class="text-sm text-[#303131] mb-3">
+              En validant la clôture, un rapport Excel complet sera automatiquement téléchargé avec :
+            </p>
+            <ul class="space-y-2 text-sm text-[#303131]">
+              <li class="flex items-start gap-2">
+                <i class="fas fa-check-circle text-[#99CFBD] mt-1 flex-shrink-0"></i>
+                <span><strong>Récapitulatif Général</strong> - Statistiques de la semaine complète</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fas fa-check-circle text-[#99CFBD] mt-1 flex-shrink-0"></i>
+                <span><strong>Consommation Utilisateurs</strong> - Détails jour par jour (Lundi→Vendredi)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fas fa-check-circle text-[#99CFBD] mt-1 flex-shrink-0"></i>
+                <span><strong>Statistiques Restaurants</strong> - Performance et plats populaires</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fas fa-check-circle text-[#99CFBD] mt-1 flex-shrink-0"></i>
+                <span><strong>Détails Plats</strong> - Liste complète avec quantités et montants</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fas fa-check-circle text-[#99CFBD] mt-1 flex-shrink-0"></i>
+                <span><strong>Gestion Dettes</strong> - Utilisateurs avec soldes à régulariser</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Footer Modal -->
+    <div class="bg-gradient-to-r from-[#E1E1E1]/50 to-[#E1E1E1]/30 p-6 sticky bottom-0 border-t-2 border-[#E1E1E1]">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-[#E84141]/20 rounded-xl flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-[#E84141] text-xl"></i>
+          </div>
+          <p class="text-sm font-bold text-[#303131]">
+            Cette action est <span class="text-[#E84141]">irréversible</span>. Le rapport sera téléchargé
+            automatiquement.
+          </p>
+        </div>
+
+        <div class="flex gap-3 w-full sm:w-auto">
+          <button (click)="closePaymentModal()"
+            class="flex-1 sm:flex-none px-6 py-3 bg-[#E1E1E1] hover:bg-[#E1E1E1]/70 text-[#303131] rounded-xl font-bold transition-all cursor-pointer">
+            Annuler
+          </button>
+          <button (click)="validatePayment()"
+            [disabled]="isLoadingPayment() || !paymentSummary() || !paymentSummary()!.restaurants.length"
+            [class.opacity-50]="isLoadingPayment() || !(paymentSummary() && paymentSummary()!.restaurants.length)"
+            [class.cursor-not-allowed]="isLoadingPayment() || !(paymentSummary() && paymentSummary()!.restaurants.length)"
+            class="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-[#99CFBD] to-[#99CFBD]/80 hover:from-[#99CFBD]/90 hover:to-[#99CFBD]/70 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ isLoadingPayment() ? 'Clôture...' : 'Clôturer & Télécharger' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ➕ MODAL CRÉER / MODIFIER COMMANDE ADMIN -->
+@if (showOrderModal()) {
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  (click)="closeOrderModal()">
+  <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-emerald-500 to-emerald-700 p-6 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+            <i class="fas fa-plus text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-black text-white">{{ orderModalTitle() }}</h2>
+            <p class="text-white/80 text-sm font-medium">Commande sans contrainte horaire</p>
+          </div>
+        </div>
+        <button (click)="closeOrderModal()"
+          class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl cursor-pointer flex items-center justify-center transition-colors">
+          <i class="fas fa-times text-white"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="overflow-y-auto flex-1 p-6 space-y-5">
+
+      @if (orderModalLoading()) {
+      <div class="flex justify-center items-center py-16">
+        <div class="relative w-16 h-16">
+          <div class="absolute inset-0 rounded-full border-4 border-emerald-200 animate-ping opacity-30"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
+        </div>
+      </div>
+      } @else {
+
+      <!-- Sélecteur utilisateur -->
+      <div>
+        <label class="block text-sm font-black text-[#20264E] mb-2">
+          <i class="fas fa-user text-emerald-500 mr-1"></i> Utilisateur
+        </label>
+        <select [value]="orderModalUserId()"
+          (change)="orderModalUserId.set(+$any($event.target).value || null)"
+          class="w-full px-4 py-3 border-2 border-[#E1E1E1] rounded-xl focus:border-emerald-500 focus:outline-none font-bold bg-white">
+          <option [value]="null">-- Sélectionner un utilisateur --</option>
+          @for (u of allUsers(); track u.userId) {
+          <option [value]="u.userId">{{ u.username }} ({{ u.email }})</option>
+          }
+        </select>
+      </div>
+
+      <!-- Date -->
+      <div>
+        <label class="block text-sm font-black text-[#20264E] mb-2">
+          <i class="fas fa-calendar text-emerald-500 mr-1"></i> Date de la commande
+        </label>
+        <input type="date" [value]="orderModalDate()"
+          (change)="orderModalDate.set($any($event.target).value)"
+          class="w-full px-4 py-3 border-2 border-[#E1E1E1] rounded-xl focus:border-emerald-500 focus:outline-none font-bold bg-white" />
+      </div>
+
+      <!-- Restaurants & menus -->
+      @if (orderModalRestaurants().length === 0) {
+      <div class="text-center py-8 bg-gray-50 rounded-2xl">
+        <i class="fas fa-utensils text-gray-300 text-4xl mb-2"></i>
+        <p class="text-gray-500 font-medium">Aucun menu disponible pour cette date</p>
+      </div>
+      } @else {
+      <div>
+        <p class="text-sm font-black text-[#20264E] mb-3">
+          <i class="fas fa-store text-emerald-500 mr-1"></i> Sélectionner les plats
+        </p>
+        <div class="space-y-3">
+          @for (resto of orderModalRestaurants(); track resto.restaurantId) {
+          <div class="border-2 border-[#E1E1E1] rounded-2xl overflow-hidden">
+            <!-- Restaurant header -->
+            <button (click)="toggleModalRestaurant(resto.restaurantId)"
+              class="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-store text-[#25509D]"></i>
+                <span class="font-black text-[#20264E]">{{ resto.restaurantName }}</span>
+                <span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
+                  {{ resto.meals.length }} plats
+                </span>
+              </div>
+              <i [class]="resto.expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="text-gray-400"></i>
+            </button>
+
+            @if (resto.expanded) {
+            <div class="divide-y divide-[#E1E1E1]">
+              @for (meal of resto.meals; track meal.mealId) {
+              <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex-1 min-w-0 mr-3">
+                  <p class="font-bold text-[#20264E] text-sm truncate">{{ meal.mealName }}</p>
+                  <p class="text-xs text-gray-500">{{ formatAmount(meal.unitPrice) }} FCFA</p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button (click)="decreaseModalQty(resto.restaurantId, meal.mealId)"
+                    class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold transition-colors cursor-pointer">
+                    <i class="fas fa-minus text-xs"></i>
+                  </button>
+                  <span [class]="meal.quantity > 0 ? 'text-emerald-600 font-black' : 'text-gray-400 font-bold'"
+                    class="w-6 text-center text-sm">{{ meal.quantity }}</span>
+                  <button (click)="increaseModalQty(resto.restaurantId, meal.mealId)"
+                    class="w-8 h-8 rounded-full bg-emerald-100 hover:bg-emerald-200 flex items-center justify-center text-emerald-600 font-bold transition-colors cursor-pointer">
+                    <i class="fas fa-plus text-xs"></i>
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-gray-50 border-t-2 border-[#E1E1E1] p-4 flex-shrink-0">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-bold text-gray-600">
+          {{ orderModalTotalItems() }} plat(s) sélectionné(s)
+        </span>
+        <span class="text-lg font-black text-[#20264E]">
+          {{ formatAmount(orderModalTotal()) }} FCFA
+        </span>
+      </div>
+      <div class="flex gap-3">
+        <button (click)="closeOrderModal()"
+          class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition-all cursor-pointer">
+          Annuler
+        </button>
+        <button (click)="submitOrderModal()" [disabled]="orderModalSubmitting() || orderModalLoading()"
+          class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (orderModalSubmitting()) {
+          <i class="fas fa-spinner fa-spin"></i> En cours...
+          } @else {
+          <i class="fas fa-check"></i> Valider la commande
+          }
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+}

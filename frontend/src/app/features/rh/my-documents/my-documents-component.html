@@ -1,0 +1,126 @@
+<div class="documents-page">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Mes Documents</h1>
+    <p class="mt-1 text-sm text-gray-500">Documents mis à disposition par votre responsable RH.</p>
+  </div>
+
+  @if (error()) {
+    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  } @else if (loading()) {
+    <div class="rounded-2xl border border-gray-200 bg-white p-12 text-center text-gray-500">
+      Chargement...
+    </div>
+  } @else {
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <header class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-base font-semibold text-gray-900">Documents</h2>
+        <div class="flex items-center gap-4">
+          @if (totalPages() > 1) {
+            <div class="flex items-center gap-1 text-sm">
+              <span class="text-gray-400 mr-2 text-xs">
+                {{ (currentPage() - 1) * pageSize + 1 }}–{{ pageEnd() }} sur {{ attachments().length }}
+              </span>
+              <button
+                (click)="currentPage.set(currentPage() - 1)"
+                [disabled]="currentPage() === 1"
+                class="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-gray-600"
+              >‹</button>
+              @for (p of pageNumbers(); track p) {
+                <button
+                  (click)="currentPage.set(p)"
+                  class="px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors"
+                  [class]="currentPage() === p
+                    ? 'bg-[#25509d] text-white border-[#25509d]'
+                    : 'border-gray-200 hover:bg-gray-50 text-gray-600'"
+                >{{ p }}</button>
+              }
+              <button
+                (click)="currentPage.set(currentPage() + 1)"
+                [disabled]="currentPage() === totalPages()"
+                class="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-gray-600"
+              >›</button>
+            </div>
+          }
+          <span class="text-sm text-gray-500">{{ attachments().length }} document(s)</span>
+        </div>
+      </header>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-3 text-left font-medium text-gray-700">Fichier</th>
+              <th class="px-6 py-3 text-left font-medium text-gray-700">Type</th>
+              <th class="px-6 py-3 text-left font-medium text-gray-700">Taille</th>
+              <th class="px-6 py-3 text-left font-medium text-gray-700">Date</th>
+              <th class="w-24 px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (doc of paginatedDocs(); track doc.attachId) {
+              <tr class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-6 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#25509d]/10 text-[#25509d] shrink-0">
+                      @if (doc.fileType === 'application/pdf') {
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      } @else {
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      }
+                    </div>
+                    <div class="min-w-0">
+                      <p class="font-medium text-gray-900 truncate">{{ doc.description || doc.filename }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ doc.filename }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-3 text-gray-600">{{ getDocTypeLabel(doc.screen) }}</td>
+                <td class="px-6 py-3 text-gray-600">{{ formatFileSize(doc.size) }}</td>
+                <td class="px-6 py-3 text-gray-600">{{ formatDate(doc.createdAt) }}</td>
+                <td class="px-6 py-3 text-right">
+                  <button
+                    type="button"
+                    (click)="download(doc)"
+                    [disabled]="downloading() === doc.attachId"
+                    class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-[#25509d] border border-[#25509d]/30 hover:bg-[#25509d]/5 disabled:opacity-50 transition-colors"
+                    title="Télécharger"
+                  >
+                    @if (downloading() === doc.attachId) {
+                      <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                    } @else {
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    }
+                    Télécharger
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-6 py-16 text-center">
+                  <div class="flex flex-col items-center gap-2 text-gray-400">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="text-sm font-medium">Aucun document disponible</p>
+                    <p class="text-xs">Vos documents apparaîtront ici lorsque votre responsable RH en ajoutera.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

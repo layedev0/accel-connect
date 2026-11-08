@@ -1,0 +1,128 @@
+<!-- first-section-component.html -->
+
+<section id="accueil" class="relative overflow-hidden">
+  <!-- Hero sombre -->
+  <div class="relative bg-[#0e1015] pt-20 md:pt-24 pb-28 md:pb-32">
+    <div class="absolute inset-0">
+      <div class="absolute inset-0 bg-gradient-to-br from-[#0e1015] via-[#1a1f3a] to-[#20264e]"></div>
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(37,80,157,0.3),transparent_50%)]"
+      ></div>
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(153,207,189,0.2),transparent_50%)]"
+      ></div>
+    </div>
+
+    <div class="absolute inset-0 opacity-20">
+      <div
+        class="absolute inset-0"
+        style="
+          background-image: radial-gradient(circle, #99cfbd 1px, transparent 1px);
+          background-size: 40px 40px;
+        "
+      ></div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <!-- Colonne gauche : texte + stats -->
+          <div class="space-y-8 lg:space-y-10">
+            <div class="space-y-4">
+              <h1
+                class="font-black text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-white leading-[1.05] tracking-tight"
+              >
+                <span class="block animate-slide-up">Dalal ak jàmm,</span>
+
+                @if (isLoading()) {
+                <span
+                  class="block mt-2 bg-gradient-to-r from-[#99cfbd] via-[#7ab8a8] to-[#5da89c] bg-clip-text text-transparent animate-slide-up animation-delay-100"
+                >
+                  <span class="inline-block animate-pulse">...</span>
+                </span>
+                } @else {
+                <span
+                  class="block mt-2 bg-gradient-to-r from-[#99cfbd] via-[#7ab8a8] to-[#5da89c] bg-clip-text text-transparent animate-slide-up animation-delay-100"
+                >
+                  {{ getDisplayName() }}!
+                </span>
+                }
+              </h1>
+            </div>
+
+            <p
+              class="text-base sm:text-lg lg:text-xl text-gray-300 font-normal leading-relaxed max-w-xl animate-slide-up animation-delay-200"
+            >
+              Collaborez, communiquez et créez ensemble sur la plateforme qui révolutionne le travail
+              d'équipe.
+            </p>
+
+            <div class="hero-stats animate-slide-up animation-delay-400">
+              <div class="hero-stat">
+                <div class="hero-stat__value">250+</div>
+                <div class="hero-stat__label">Collaborateurs</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat__value">42</div>
+                <div class="hero-stat__label">Projets</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat__value">15</div>
+                <div class="hero-stat__label">Pays</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne droite : média -->
+          <div class="relative">
+            <div class="hero-media group">
+              <div class="hero-media__glow"></div>
+
+              <div class="hero-media__frame">
+                <img
+                  src="assets/img/accel-team.jpg"
+                  alt="Équipe Accel Tech"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accès rapides : chevauchement hero / section claire -->
+  <div class="relative z-20 -mt-16 md:-mt-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="quick-access-grid">
+        @for (icon of icons; track $index) {
+        <a
+          class="quick-access-card group"
+          [title]="iconTitles[$index]"
+          (click)="onIconClick($event, $index)"
+        >
+          <div class="quick-access-card__icon">
+            <fa-icon [icon]="['fas', icons[$index]]"></fa-icon>
+          </div>
+          <h3 class="quick-access-card__title">{{ iconTitles[$index] }}</h3>
+        </a>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Espace blanc sous les cartes -->
+  <div class="bg-white pt-10 md:pt-14 pb-4"></div>
+</section>
+
+@if (showTransition) {
+<app-menu-transition
+  [animationPath]="getCurrentAnimation()"
+  [theme]="getCurrentAnimationTheme()"
+  [duration]="2500"
+  (animationComplete)="onTransitionComplete()"
+/>
+}
+
+<app-alex-chat-component></app-alex-chat-component>

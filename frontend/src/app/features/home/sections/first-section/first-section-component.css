@@ -1,0 +1,267 @@
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes float-delayed {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(-5deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 78%;
+  }
+}
+
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-progress {
+  animation: progress 2s ease-out forwards;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+/* Overlay fade-in/fade-out */
+.fixed.inset-0 {
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Hero layout */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  max-width: 32rem;
+}
+
+.hero-stat__value {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.hero-stat__label {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.hero-media {
+  position: relative;
+}
+
+.hero-media__glow {
+  position: absolute;
+  inset: -1.25rem;
+  border-radius: 1.75rem;
+  background: linear-gradient(135deg, rgba(37, 80, 157, 0.35), rgba(153, 207, 189, 0.35));
+  filter: blur(24px);
+  opacity: 0.75;
+}
+
+.hero-media__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: #000;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+}
+
+/* Quick access cards overlapping hero */
+.quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.quick-access-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  min-height: 8.5rem;
+  padding: 1.25rem 1rem;
+  border-radius: 1.25rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.quick-access-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(37, 80, 157, 0.2);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+}
+
+.quick-access-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  background: #f3f4f6;
+  color: #111827;
+  font-size: 1.5rem;
+}
+
+.quick-access-card__title {
+  margin: 0;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #374151;
+  line-height: 1.25;
+}
+
+@media (min-width: 640px) {
+  .quick-access-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .quick-access-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .quick-access-card {
+    min-height: 9.5rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .hero-stats {
+    gap: 1rem;
+  }
+
+  .hero-stat__label {
+    font-size: 0.75rem;
+  }
+}

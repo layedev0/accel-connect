@@ -1,0 +1,51 @@
+<!-- Page header -->
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Types de congés</h1>
+  <p class="text-sm text-gray-500 mt-0.5">Catalogue des types de congés définis par l'entreprise</p>
+</div>
+
+<!-- Leave types table -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="text-base font-semibold text-gray-800">Types disponibles</h2>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center h-32">
+      <div class="w-6 h-6 border-4 border-[#25509d] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else if (leaveTypes().length === 0) {
+    <div class="px-6 py-10 text-center text-sm text-gray-400">
+      Aucun type de congé disponible.
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[480px]">
+      <thead>
+        <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+          <th class="px-6 py-3 text-left font-medium">Code</th>
+          <th class="px-6 py-3 text-left font-medium">Nom</th>
+          <th class="px-6 py-3 text-center font-medium">Jours alloués</th>
+          <th class="px-6 py-3 text-left font-medium">Règle de déduction</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (type of leaveTypes(); track type.code) {
+          <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-[#25509d]/10 text-[#25509d]">
+                {{ type.code }}
+              </span>
+            </td>
+            <td class="px-6 py-4 font-medium text-gray-800">{{ type.name }}</td>
+            <td class="px-6 py-4 text-center text-gray-600">
+              @if (type.allocatedDays > 0) { {{ type.allocatedDays }} j } @else { — }
+            </td>
+            <td class="px-6 py-4 text-gray-600">{{ deductionLabel(type.deductionRule) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    </div>
+  }
+</div>

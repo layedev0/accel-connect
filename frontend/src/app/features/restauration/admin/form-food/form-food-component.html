@@ -1,0 +1,243 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="px-3 py-4 sm:px-4 sm:py-6 lg:py-8 mx-auto max-w-4xl">
+    <!-- Header -->
+    <div class="mb-6 sm:mb-8">
+      <div class="flex items-center gap-2 sm:gap-3 mb-2">
+        <button
+          routerLink="/admin/liste-food"
+          class="p-2 cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            Ajouter un nouveau plat
+          </h1>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Créez un nouveau plat qui pourra être affecté aux restaurants
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <form
+        [formGroup]="platForm"
+        (ngSubmit)="onSubmit()"
+        class="p-4 sm:p-6 space-y-5 sm:space-y-6"
+      >
+        <!-- Nom du plat -->
+        <div class="space-y-2">
+          <label for="foodName" class="block text-sm font-semibold text-gray-900 dark:text-white">
+            Nom du plat <span class="text-red-500">*</span>
+          </label>
+          <input
+            formControlName="mealName"
+            type="text"
+            id="foodName"
+            placeholder="Ex: Thiébou Dieune, Yassa Poulet..."
+            class="w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 transition-all"
+            [ngClass]="{
+              'border-red-500 dark:border-red-500': hasError('mealName'),
+              'border-gray-300 dark:border-gray-600': !hasError('mealName')
+            }"
+          />
+          @if (hasError('mealName')) {
+          <div class="flex items-start gap-2 mt-1.5">
+            <svg
+              class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <p class="text-xs text-red-600 dark:text-red-400">
+              {{ getError('mealName') }}
+            </p>
+          </div>
+          }
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+
+        <!-- Prix -->
+        <div class="space-y-2">
+          <label for="foodPrice" class="block text-sm font-semibold text-gray-900 dark:text-white">
+            Prix unitaire <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input
+              formControlName="unitPrice"
+              type="text"
+              id="foodPrice"
+              placeholder="2500"
+              inputmode="numeric"
+              class="w-full px-4 py-3 pr-20 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 transition-all"
+              [ngClass]="{
+                'border-red-500 dark:border-red-500': hasError('unitPrice'),
+                'border-gray-300 dark:border-gray-600': !hasError('unitPrice')
+              }"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+              <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">FCFA</span>
+            </div>
+          </div>
+          @if (hasError('unitPrice')) {
+          <div class="flex items-start gap-2 mt-1.5">
+            <svg
+              class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <p class="text-xs text-red-600 dark:text-red-400">
+              {{ getError('unitPrice') }}
+            </p>
+          </div>
+          }
+          <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Entrez uniquement des chiffres (ex: 2500, 5000)
+          </p>
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+
+        <!-- imageUrl -->
+        <div class="space-y-2">
+          <label for="imageUrl" class="block text-sm font-semibold text-gray-900 dark:text-white">
+            Image URL <span class="text-red-500">-->Facultatif</span>
+          </label>
+          <input
+            id="imageUrl"
+            type="url"
+            formControlName="imageUrl"
+            placeholder="Entrez l'URL de l'image..."
+            class="w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 transition-all"
+            [ngClass]="{
+              'border-red-500
+          dark:border-red-500': hasError('imageUrl'),
+              'border-gray-300 dark:border-gray-600': !hasError('imageUrl')
+            }"
+          />
+          <!-- Message d'erreur optionnel -->
+          @if (hasError('imageUrl')) {
+          <div class="flex items-start gap-2 mt-1.5">
+            <svg
+              class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <p class="text-xs text-red-600 dark:text-red-400">
+              {{ getError('imageUrl') }}
+            </p>
+          </div>
+          }
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+
+        <!-- Boutons d'action -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button
+            routerLink="/admin/liste-food"
+            type="button"
+            class="flex-1 cursor-pointer px-6 py-3 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            [disabled]="platForm.invalid || isSubmitting"
+            type="submit"
+            class="flex-1 cursor-pointer px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            @if (!isSubmitting) {
+            <span>Créer le plat</span>
+            } @if (isSubmitting) {
+            <span class="flex items-center gap-2">
+              <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Création en cours...
+            </span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Info box -->
+    <div
+      class="mt-4 sm:mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl"
+    >
+      <div class="flex gap-3">
+        <svg
+          class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <div>
+          <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
+            Note importante
+          </h4>
+          <p class="text-xs text-blue-700 dark:text-blue-400">
+            Une fois le plat créé, vous pourrez l'affecter à un ou plusieurs restaurants (JOLOF,
+            RODRA, CHEZ EVA) depuis la section "Affecter aux restaurants".
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

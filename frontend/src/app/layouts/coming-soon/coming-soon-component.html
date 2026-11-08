@@ -1,0 +1,58 @@
+<section
+  class="min-h-[calc(100vh-72px-200px)] flex flex-col items-center justify-center bg-gradient-to-br from-[#f8fafc] via-white to-[#eef2ff] px-4"
+>
+  <!-- Icône du module -->
+  <div class="relative mb-6">
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-[#25509d]/20 to-[#99cfbd]/20 rounded-full blur-2xl scale-150"
+    ></div>
+    <div
+      class="relative w-32 h-32 rounded-full bg-white shadow-2xl border border-gray-100 flex items-center justify-center overflow-hidden"
+    >
+      <img
+        [src]="moduleIcon"
+        [alt]="moduleLabel"
+        class="w-3/4 h-3/4 object-contain"
+      />
+    </div>
+  </div>
+
+  <!-- Badge -->
+  <div
+    class="inline-flex items-center gap-2 px-4 py-1.5 bg-[#25509d]/10 rounded-full mb-4"
+  >
+    <span class="w-2 h-2 rounded-full bg-[#25509d] animate-pulse"></span>
+    <span class="text-[#25509d] text-xs font-bold uppercase tracking-widest">
+      En construction
+    </span>
+  </div>
+
+  <!-- Titre -->
+  <h1
+    class="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 text-center mb-3"
+  >
+    {{ moduleLabel }}
+  </h1>
+  <p class="text-gray-500 text-center text-base sm:text-lg max-w-md mb-8">
+    Ce module est en cours de développement. Il sera disponible très prochainement.
+  </p>
+
+  <!-- Barre de progression décorative -->
+  <div class="w-48 h-1.5 bg-gray-200 rounded-full overflow-hidden mb-8">
+    <div
+      class="h-full bg-gradient-to-r from-[#25509d] to-[#99cfbd] rounded-full animate-pulse"
+      style="width: 60%"
+    ></div>
+  </div>
+
+  <!-- Bouton retour -->
+  <a
+    routerLink="/"
+    class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#25509d] via-[#3d6bb5] to-[#99cfbd] text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-all duration-300"
+  >
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    Retour à l'accueil
+  </a>
+</section>

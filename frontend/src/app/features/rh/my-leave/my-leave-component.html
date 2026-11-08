@@ -1,0 +1,646 @@
+@if (loading()) {
+  <div class="flex items-center justify-center h-64">
+    <div class="w-8 h-8 border-4 border-[#25509d] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+} @else {
+
+  <!-- Page header -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Mes Congés</h1>
+      @if (employeeInfo()?.departmentName) {
+        <p class="text-sm text-gray-500 mt-0.5">Département : {{ employeeInfo()!.departmentName }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  @if (userBalance()) {
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Congés Totals</p>
+          <p class="text-2xl font-bold text-gray-800">
+            {{ userBalance()!.leaveDue | number:'1.0-1' }}
+            <span class="text-sm font-normal text-gray-500">j</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Congés pris</p>
+          <p class="text-2xl font-bold text-gray-800">
+            {{ userBalance()!.leaveTaken | number:'1.0-1' }}
+            <span class="text-sm font-normal text-gray-500">j</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Solde congés</p>
+          <p class="text-2xl font-bold text-gray-800">
+            {{ userBalance()!.leaveBalance | number:'1.0-1' }}
+            <span class="text-sm font-normal text-gray-500">j</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Success / Error messages -->
+  @if (successMsg()) {
+    <div class="mb-4 flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
+      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {{ successMsg() }}
+    </div>
+  }
+
+  <!-- Tabs -->
+  <div class="flex overflow-x-auto border-b border-gray-200 mb-6">
+    <button
+      (click)="setTab('pending')"
+      class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors"
+      [class]="activeTab() === 'pending' ? 'border-[#25509d] text-[#25509d]' : 'border-transparent text-gray-500 hover:text-gray-700'"
+    >
+      En attente
+      @if (pendingRequests().length > 0) {
+        <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">{{ pendingRequests().length }}</span>
+      }
+    </button>
+    <button
+      (click)="setTab('approved')"
+      class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors"
+      [class]="activeTab() === 'approved' ? 'border-[#25509d] text-[#25509d]' : 'border-transparent text-gray-500 hover:text-gray-700'"
+    >
+      Approuvés
+      @if (approvedRequests().length > 0) {
+        <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{{ approvedRequests().length }}</span>
+      }
+    </button>
+    <button
+      (click)="setTab('rejected')"
+      class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors"
+      [class]="activeTab() === 'rejected' ? 'border-[#25509d] text-[#25509d]' : 'border-transparent text-gray-500 hover:text-gray-700'"
+    >
+      Rejetés
+      @if (rejectedRequests().length > 0) {
+        <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-red-100 text-red-700">{{ rejectedRequests().length }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- ── EN ATTENTE TAB ─────────────────────────────────────────── -->
+  @if (activeTab() === 'pending') {
+
+    <!-- New request button + form -->
+    <div class="mb-4">
+      <button
+        (click)="toggleForm()"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
+        [style.background-color]="showForm() ? '#6b7280' : '#25509d'"
+      >
+        @if (showForm()) { <span>✕ Fermer</span> } @else { <span>+ Demander un congé</span> }
+      </button>
+    </div>
+
+    @if (showForm()) {
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+        <h2 class="text-base font-semibold text-gray-800 mb-4">
+          @if (editingRequest()) { Modifier la demande de congé } @else { Nouvelle demande de congé }
+        </h2>
+
+        @if (errorMsg()) {
+          <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+
+          <!-- Leave type + dates -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Type de congé *</label>
+              <select
+                formControlName="leaveTypeCode"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]"
+              >
+                <option [value]="null" disabled selected>Sélectionner...</option>
+                @for (type of leaveTypes(); track type.code) {
+                  <option [value]="type.code">{{ type.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Début *</label>
+              <input type="date" formControlName="startDate"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Fin *</label>
+              <input type="date" formControlName="endDate" [min]="minEndDate()"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]" />
+              @if (noWorkingDaysWarning()) {
+                <p class="mt-1 text-xs text-amber-600 font-medium">Aucun jour ouvré dans cette période (lundi–vendredi).</p>
+            
+              } @else {
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ estimatedWorkingDays() }} j ouvrés estimés
+                  @if (selectedBalance()) {
+                    — solde : <strong class="text-[#25509d]">{{ selectedBalance()!.available }} j</strong>
+                  }
+                </p>
+              }
+            </div>
+          </div>
+
+          @if (dateRangeError()) {
+            <p class="text-xs text-red-600 -mt-2">{{ dateRangeError() }}</p>
+          }
+
+          <!-- Half-day time range -->
+          @if (isSingleDay()) {
+            <div class="grid grid-cols-2 gap-4 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">
+                  Heure de début <span class="text-gray-400 font-normal ml-1">(optionnel — demi-journée)</span>
+                </label>
+                <input type="time" formControlName="startTime"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Heure de fin</label>
+                <input type="time" formControlName="endTime"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#25509d]" />
+                @if (timeRangeError()) {
+                  <p class="mt-1 text-xs text-red-500">{{ timeRangeError() }}</p>
+                } @else if (halfDayHours() !== null) {
+                  @if (halfDayHours()! <= 4) {
+                    <p class="mt-1 text-xs text-blue-600 font-medium">Demi-journée — {{ halfDayHours()!.toFixed(2) }}h = 0.5 j</p>
+                  } @else {
+                    <p class="mt-1 text-xs text-gray-500">{{ halfDayHours()!.toFixed(2) }}h → journée complète</p>
+                  }
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Comment -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Commentaire</label>
+            <textarea formControlName="comment" rows="2"
+              placeholder="Motif ou précisions (optionnel)"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#25509d]">
+            </textarea>
+          </div>
+
+          <!-- File attachments -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+              Pièces jointes <span class="text-gray-400 font-normal ml-1">(optionnel — PDF, JPEG ou PNG, max 10 Mo par fichier)</span>
+            </label>
+
+            @if (editingRequest()) {
+              @if (loadingExistingAttachments()) {
+                <div class="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                  <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Chargement des pièces jointes existantes...
+                </div>
+              } @else if (keptAttachments().length > 0) {
+                <p class="text-xs text-gray-500 mb-1">Pièces jointes existantes</p>
+                <div class="space-y-2 mb-3">
+                  @for (att of keptAttachments(); track att.attachId) {
+                    <div class="flex items-center gap-3 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg">
+                      <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium text-gray-800 truncate">{{ att.filename }}</p>
+                        <p class="text-xs text-gray-400">{{ formatFileSize(att.size) }}</p>
+                      </div>
+                      <button type="button" (click)="removeExistingAttachment(att.attachId)"
+                        class="text-gray-400 hover:text-red-500 transition-colors" title="Supprimer cette pièce jointe">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            @if (attachedFiles().length > 0) {
+              <div class="space-y-2 mb-2">
+                @for (file of attachedFiles(); track file.name + file.size; let i = $index) {
+                  <div class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                    <svg class="w-5 h-5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-medium text-gray-800 truncate">{{ file.name }}</p>
+                      <p class="text-xs text-gray-400">{{ formatFileSize(file.size) }}</p>
+                    </div>
+                    <button type="button" (click)="removeStagedFile(i)" class="text-gray-400 hover:text-red-500 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <label class="flex items-center gap-3 cursor-pointer border border-dashed border-gray-300 rounded-lg px-4 py-3 hover:border-[#25509d] hover:bg-blue-50/40 transition-colors group">
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-[#25509d] shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+              </svg>
+              <span class="text-sm text-gray-400 group-hover:text-[#25509d] transition-colors">
+                {{ attachedFiles().length > 0 ? "Ajouter d'autres fichiers..." : 'Choisir des fichiers...' }}
+              </span>
+              <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple (change)="onFileSelected($event)" />
+            </label>
+
+            @if (attachFileError()) {
+              <p class="mt-1 text-xs text-red-600">{{ attachFileError() }}</p>
+            }
+          </div>
+
+          <!-- Approver single-select -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+              Approbateur <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <button type="button" (click)="toggleApproverDropdown()"
+                class="w-full flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2 text-sm text-left bg-white focus:outline-none focus:ring-2 focus:ring-[#25509d]">
+                <span [class]="selectedApproverId() === null ? 'text-gray-400' : 'text-gray-700'">
+                  @if (selectedApproverId() === null) { Rechercher un approbateur... }
+                  @else { {{ selectedApprover()?.email }} }
+                </span>
+                <span class="text-gray-400 text-xs ml-2">{{ showApproverDropdown() ? '▴' : '▾' }}</span>
+              </button>
+              @if (showApproverDropdown()) {
+                <div class="fixed inset-0 z-[9]" (click)="closeApproverDropdown()"></div>
+                <div class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                  <div class="p-2 border-b border-gray-100">
+                    <input type="text" [value]="approverSearch()" (input)="approverSearch.set($any($event.target).value)"
+                      (click)="$event.stopPropagation()" placeholder="Rechercher par email ou nom..."
+                      class="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#25509d]" autofocus />
+                  </div>
+                  <div class="max-h-48 overflow-y-auto">
+                    @if (filteredColleagues().length === 0) {
+                      <div class="px-4 py-4 text-xs text-gray-400 text-center">Aucun résultat</div>
+                    }
+                    @for (c of filteredColleagues(); track c.id) {
+                      <button type="button" (click)="toggleApprover(c.id)"
+                        class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors">
+                        <span class="w-4 h-4 flex-shrink-0 border-2 rounded-full flex items-center justify-center transition-colors"
+                          [class]="selectedApproverId() === c.id ? 'bg-[#25509d] border-[#25509d]' : 'border-gray-300 bg-white'">
+                          @if (selectedApproverId() === c.id) {
+                            <span class="w-2 h-2 rounded-full bg-white block"></span>
+                          }
+                        </span>
+                        <div class="min-w-0">
+                          <div class="text-sm text-gray-800 font-medium truncate">{{ c.email }}</div>
+                          <div class="text-xs text-gray-400">{{ c.firstName }} {{ c.lastName }}</div>
+                        </div>
+                      </button>
+                    }
+                  </div>
+                  <div class="p-2 border-t border-gray-100 flex justify-end">
+                    <button type="button" (click)="closeApproverDropdown()"
+                      class="text-xs text-gray-500 hover:text-gray-700 px-3 py-1 rounded transition-colors">Fermer</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-3 pt-2">
+            <button type="button" (click)="toggleForm()"
+              class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+              Annuler
+            </button>
+            <button type="submit"
+              [disabled]="form.invalid || submitting() || !!dateRangeError() || !!timeRangeError() || noWorkingDaysWarning()"
+              class="px-5 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
+              style="background-color: #25509d;">
+              @if (submitting()) { Envoi en cours... }
+              @else if (editingRequest()) { Modifier la demande }
+              @else { Soumettre la demande }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Pending requests table -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      @if (pendingRequests().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+          <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-base font-medium text-gray-500">Aucune demande en attente</p>
+          <p class="text-sm text-gray-400">Toutes vos demandes ont été traitées.</p>
+        </div>
+      } @else {
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-base font-semibold text-gray-800">
+            Demandes en attente
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ pendingRequests().length }})</span>
+          </h2>
+          @if (totalPages() > 1) { <ng-container *ngTemplateOutlet="paginationControls"></ng-container> }
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="px-6 py-3 text-left font-medium">Type</th>
+                <th class="px-6 py-3 text-left font-medium">Du</th>
+                <th class="px-6 py-3 text-left font-medium">Au</th>
+                <th class="px-6 py-3 text-center font-medium">Jours</th>
+                <th class="px-6 py-3 text-center font-medium">Statut</th>
+                <th class="px-6 py-3 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of paginatedRequests(); track req.id) {
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                  (click)="toggleExpand(req.id)">
+                  <td class="px-6 py-4 font-medium text-gray-800">{{ req.leaveTypeName }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.startDate) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.endDate) }}</td>
+                  <td class="px-6 py-4 text-center font-semibold text-gray-700">{{ req.totalDays }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusClass(req.overallStatus) }}">
+                      {{ req.overallStatus }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-3">
+                      <button (click)="$event.stopPropagation(); startEdit(req)"
+                        class="text-xs text-[#25509d] hover:text-blue-900 font-medium transition-colors">
+                        Modifier
+                      </button>
+                      <button (click)="$event.stopPropagation(); deleteRequest(req.id)"
+                        class="text-xs text-red-600 hover:text-red-800 font-medium transition-colors">
+                        Supprimer
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                @if (expandedRequestId() === req.id) {
+                  <tr>
+                    <td colspan="6" class="px-6 pb-4 bg-gray-50">
+                      <ng-container *ngTemplateOutlet="requestDetail; context: { req: req }"></ng-container>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── APPROUVÉS TAB ──────────────────────────────────────────── -->
+  @if (activeTab() === 'approved') {
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      @if (approvedRequests().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+          <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-base font-medium text-gray-500">Aucun congé approuvé</p>
+          <p class="text-sm text-gray-400">Les congés approuvés apparaîtront ici.</p>
+        </div>
+      } @else {
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-base font-semibold text-gray-800">
+            Congés approuvés
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ approvedRequests().length }})</span>
+          </h2>
+          @if (totalPages() > 1) { <ng-container *ngTemplateOutlet="paginationControls"></ng-container> }
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="px-6 py-3 text-left font-medium">Type</th>
+                <th class="px-6 py-3 text-left font-medium">Soumis le</th>
+                <th class="px-6 py-3 text-left font-medium">Du</th>
+                <th class="px-6 py-3 text-left font-medium">Au</th>
+                <th class="px-6 py-3 text-center font-medium">Jours</th>
+                <th class="px-6 py-3 text-center font-medium">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of paginatedRequests(); track req.id) {
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                  (click)="toggleExpand(req.id)">
+                  <td class="px-6 py-4 font-medium text-gray-800">{{ req.leaveTypeName }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.dateApplied) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.startDate) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.endDate) }}</td>
+                  <td class="px-6 py-4 text-center font-semibold text-gray-700">{{ req.totalDays }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusClass(req.overallStatus) }}">
+                      {{ req.overallStatus }}
+                    </span>
+                  </td>
+                </tr>
+                @if (expandedRequestId() === req.id) {
+                  <tr>
+                    <td colspan="6" class="px-6 pb-4 bg-gray-50">
+                      <ng-container *ngTemplateOutlet="requestDetail; context: { req: req }"></ng-container>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── REJETÉS TAB ────────────────────────────────────────────── -->
+  @if (activeTab() === 'rejected') {
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      @if (rejectedRequests().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+          <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-base font-medium text-gray-500">Aucune demande rejetée</p>
+          <p class="text-sm text-gray-400">Les demandes rejetées ou annulées apparaîtront ici.</p>
+        </div>
+      } @else {
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-base font-semibold text-gray-800">
+            Demandes rejetées / annulées
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ rejectedRequests().length }})</span>
+          </h2>
+          @if (totalPages() > 1) { <ng-container *ngTemplateOutlet="paginationControls"></ng-container> }
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="px-6 py-3 text-left font-medium">Type</th>
+                <th class="px-6 py-3 text-left font-medium">Soumis le</th>
+                <th class="px-6 py-3 text-left font-medium">Du</th>
+                <th class="px-6 py-3 text-left font-medium">Au</th>
+                <th class="px-6 py-3 text-center font-medium">Jours</th>
+                <th class="px-6 py-3 text-center font-medium">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of paginatedRequests(); track req.id) {
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                  (click)="toggleExpand(req.id)">
+                  <td class="px-6 py-4 font-medium text-gray-800">{{ req.leaveTypeName }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.dateApplied) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.startDate) }}</td>
+                  <td class="px-6 py-4 text-gray-500">{{ formatDate(req.endDate) }}</td>
+                  <td class="px-6 py-4 text-center font-semibold text-gray-700">{{ req.totalDays }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusClass(req.overallStatus) }}">
+                      {{ req.overallStatus }}
+                    </span>
+                  </td>
+                </tr>
+                @if (expandedRequestId() === req.id) {
+                  <tr>
+                    <td colspan="6" class="px-6 pb-4 bg-gray-50">
+                      <ng-container *ngTemplateOutlet="requestDetail; context: { req: req }"></ng-container>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+}
+
+<!-- ── Shared templates ──────────────────────────────────────────── -->
+
+<!-- Request expanded detail -->
+<ng-template #requestDetail let-req="req">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+    <!-- Day breakdown -->
+    <div>
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Détail des jours</p>
+      <div class="space-y-1">
+        @for (day of req.days; track day.date) {
+          <div class="flex items-center justify-between text-xs text-gray-600 py-1 border-b border-gray-100 last:border-0">
+            <span>{{ day.dayOfWeek }} {{ formatDate(day.date) }}</span>
+            <span class="font-medium">{{ day.lengthDays }} j · {{ day.durationType }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Approvers + comments -->
+    <div class="space-y-4">
+      @if (req.approvers && req.approvers.length > 0) {
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Approbateurs désignés</p>
+          <div class="flex flex-wrap gap-1.5">
+            @for (a of req.approvers; track a.id) {
+              <span class="px-2.5 py-1 bg-[#25509d]/10 text-[#25509d] text-xs rounded-full font-medium">
+                {{ a.displayName }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+      @if (req.decidedByName) {
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            {{ req.overallStatus === 'Approuvé' || req.overallStatus === 'Pris' ? 'Approuvé par' : 'Rejeté par' }}
+          </p>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium"
+            [class]="req.overallStatus === 'Approuvé' || req.overallStatus === 'Pris' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+            {{ req.decidedByName }}
+          </span>
+        </div>
+      }
+      @if (req.comments.length > 0) {
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Commentaires</p>
+          <div class="space-y-2">
+            @for (comment of req.comments; track comment.createdAt) {
+              <div class="bg-white border border-gray-200 rounded-lg p-3 text-xs">
+                <p class="text-gray-700">{{ comment.text }}</p>
+                <p class="text-gray-400 mt-1">{{ comment.author }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<!-- Pagination controls -->
+<ng-template #paginationControls>
+  <div class="flex items-center gap-1 text-sm">
+    <span class="text-gray-400 mr-2 text-xs">
+      {{ (currentPage() - 1) * pageSize + 1 }}–{{ pageEnd() }} sur {{ activeTabRequests().length }}
+    </span>
+    <button (click)="currentPage.set(currentPage() - 1)" [disabled]="currentPage() === 1"
+      class="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-gray-600">‹</button>
+    @for (p of pageNumbers(); track p) {
+      <button (click)="currentPage.set(p)"
+        class="px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors"
+        [class]="currentPage() === p ? 'bg-[#25509d] text-white border-[#25509d]' : 'border-gray-200 hover:bg-gray-50 text-gray-600'">
+        {{ p }}
+      </button>
+    }
+    <button (click)="currentPage.set(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+      class="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-gray-600">›</button>
+  </div>
+</ng-template>

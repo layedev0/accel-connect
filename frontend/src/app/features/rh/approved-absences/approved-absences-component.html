@@ -1,0 +1,316 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Absences approuvées</h1>
+      <p class="text-sm text-gray-500 mt-1">Liste de toutes les absences approuvées des employés</p>
+    </div>
+    @if (!loading()) {
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+        {{ allRequests().length }} absence(s) approuvée(s)
+      </span>
+    }
+  </div>
+
+  <!-- Alerts -->
+  @if (successMsg()) {
+    <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
+      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      {{ successMsg() }}
+    </div>
+  }
+  <!-- Error -->
+  @if (errorMsg()) {
+    <div class="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
+      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      {{ errorMsg() }}
+    </div>
+  }
+
+  <!-- Filter bar -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+      <!-- Prénom / Nom -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-500">Prénom / Nom</label>
+        <input
+          type="text"
+          placeholder="Filtrer par prénom..."
+          [value]="filterFirstName()"
+          (input)="filterFirstName.set($any($event.target).value); currentPage.set(1)"
+          class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 placeholder-gray-400
+                 focus:outline-none focus:ring-2 focus:ring-[#25509d]/40 focus:border-[#25509d]"
+        />
+      </div>
+      <!-- Email -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-500">Email</label>
+        <input
+          type="text"
+          placeholder="Filtrer par email..."
+          [value]="filterEmail()"
+          (input)="filterEmail.set($any($event.target).value); currentPage.set(1)"
+          class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900 placeholder-gray-400
+                 focus:outline-none focus:ring-2 focus:ring-[#25509d]/40 focus:border-[#25509d]"
+        />
+      </div>
+      <!-- Période du -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-500">Période — du</label>
+        <input
+          type="date"
+          [value]="filterStartDate()"
+          (change)="filterStartDate.set($any($event.target).value); currentPage.set(1)"
+          class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900
+                 focus:outline-none focus:ring-2 focus:ring-[#25509d]/40 focus:border-[#25509d]"
+        />
+      </div>
+      <!-- Période au -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-500">Période — au</label>
+        <div class="flex items-center gap-2">
+          <input
+            type="date"
+            [value]="filterEndDate()"
+            (change)="filterEndDate.set($any($event.target).value); currentPage.set(1)"
+            class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-900
+                   focus:outline-none focus:ring-2 focus:ring-[#25509d]/40 focus:border-[#25509d]"
+          />
+          @if (hasActiveFilters()) {
+            <button
+              type="button"
+              (click)="resetFilters()"
+              class="shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+              title="Réinitialiser les filtres"
+            >
+              Réinitialiser
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+    @if (hasActiveFilters()) {
+      <p class="mt-2 text-xs text-gray-400">
+        {{ filteredRequests().length }} résultat(s) sur {{ allRequests().length }}
+      </p>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+      <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+      </svg>
+      <span class="text-sm">Chargement...</span>
+    </div>
+  }
+
+  <!-- Empty — no data -->
+  @if (!loading() && allRequests().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+      <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-base font-medium text-gray-500">Aucune absence approuvée</p>
+      <p class="text-sm text-gray-400">Les absences approuvées apparaîtront ici.</p>
+    </div>
+  }
+
+  <!-- Empty — filters returned nothing -->
+  @if (!loading() && allRequests().length > 0 && filteredRequests().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+      <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+      </svg>
+      <p class="text-base font-medium text-gray-500">Aucun résultat</p>
+      <p class="text-sm text-gray-400">Aucune absence ne correspond aux filtres appliqués.</p>
+      <button type="button" (click)="resetFilters()"
+        class="mt-1 px-3 py-1.5 rounded-lg text-sm font-medium text-[#25509d] bg-[#25509d]/10 hover:bg-[#25509d]/20 transition-colors">
+        Réinitialiser les filtres
+      </button>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!loading() && filteredRequests().length > 0) {
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[720px]">
+          <thead>
+            <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+              <th class="px-5 py-3 text-left font-medium">Employé</th>
+              <th class="px-5 py-3 text-left font-medium">Email</th>
+              <th class="px-5 py-3 text-left font-medium">Type d'absence</th>
+              <th class="px-5 py-3 text-left font-medium">Date</th>
+              <th class="px-5 py-3 text-left font-medium">Début</th>
+              <th class="px-5 py-3 text-left font-medium">Fin</th>
+              <th class="px-5 py-3 text-center font-medium">Durée</th>
+              <th class="px-5 py-3 text-left font-medium">Soumis le</th>
+              <th class="px-5 py-3 text-left font-medium">Approuvé par</th>
+              <th class="px-5 py-3 text-center font-medium">Statut</th>
+              <th class="px-5 py-3 text-center font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (req of paged(); track req.id) {
+              <tr class="hover:bg-gray-50 transition-colors">
+                <!-- Employee -->
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#25509d] to-[#99cfbd] flex items-center justify-center text-white font-bold text-xs shrink-0">
+                      {{ (req.employeeName ?? '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="font-medium text-gray-800">{{ req.employeeName ?? '—' }}</span>
+                  </div>
+                </td>
+                <!-- Email -->
+                <td class="px-5 py-3 text-gray-500 text-xs">{{ req.employeeEmail ?? '—' }}</td>
+                <!-- Type -->
+                <td class="px-5 py-3 text-gray-600">{{ req.absenceTypeName ?? '—' }}</td>
+                <!-- Date -->
+                <td class="px-5 py-3 text-gray-600">{{ formatDate(req.date) }}</td>
+                <!-- Start time -->
+                <td class="px-5 py-3 text-gray-600">{{ formatTime(req.startTime) }}</td>
+                <!-- End time -->
+                <td class="px-5 py-3 text-gray-600">{{ formatTime(req.endTime) }}</td>
+                <!-- Duration -->
+                <td class="px-5 py-3 text-center font-semibold text-gray-700">{{ req.durationHours }}h</td>
+                <!-- Date applied -->
+                <td class="px-5 py-3 text-gray-500">{{ formatDate(req.dateApplied) }}</td>
+                <!-- Decided by -->
+                <td class="px-5 py-3 text-gray-600">{{ req.decidedByName ?? '—' }}</td>
+                <!-- Status -->
+                <td class="px-5 py-3 text-center">
+                  <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ' + statusClass(req.status)">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <!-- Cancel action -->
+                <td class="px-5 py-3 text-center">
+                  @if (req.status === 'Approuvé' && canCancel(req)) {
+                    <button
+                      type="button"
+                      (click)="openCancelModal(req)"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                      Annuler
+                    </button>
+                  } @else {
+                    <span class="text-xs text-gray-300">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+          <span class="text-xs text-gray-500">
+            {{ (currentPage() - 1) * pageSize + 1 }}–{{ min(currentPage() * pageSize, filteredRequests().length) }}
+            sur {{ filteredRequests().length }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button (click)="currentPage.set(currentPage() - 1)" [disabled]="currentPage() === 1"
+              class="px-2.5 py-1 rounded-lg text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              ‹
+            </button>
+            @for (p of pageRange(); track p) {
+              <button (click)="currentPage.set(p)"
+                [class]="'px-2.5 py-1 rounded-lg text-sm font-medium transition-colors ' +
+                  (currentPage() === p ? 'bg-[#25509d] text-white' : 'text-gray-600 bg-white border border-gray-200 hover:bg-gray-50')">
+                {{ p }}
+              </button>
+            }
+            <button (click)="currentPage.set(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+              class="px-2.5 py-1 rounded-lg text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              ›
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Cancel modal -->
+@if (modalRequest()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
+
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-gray-900">Annuler l'absence approuvée</h3>
+          <p class="text-sm text-gray-500 mt-0.5">
+            {{ modalRequest()?.employeeName }} · {{ modalRequest()?.absenceTypeName }} ·
+            {{ formatDate(modalRequest()?.date ?? '') }}
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+          Commentaire <span class="text-gray-400 font-normal">(optionnel)</span>
+        </label>
+        <textarea
+          rows="3"
+          placeholder="Ex : Annulation suite à un changement de planning..."
+          class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400
+                 focus:outline-none focus:ring-2 focus:ring-[#25509d]/40 focus:border-[#25509d] resize-none"
+          [value]="modalComment()"
+          (input)="modalComment.set($any($event.target).value)"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          (click)="closeModal()"
+          [disabled]="modalSubmitting()"
+          class="px-4 py-2 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 transition-colors"
+        >
+          Fermer
+        </button>
+        <button
+          type="button"
+          (click)="confirmCancel()"
+          [disabled]="modalSubmitting()"
+          class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          @if (modalSubmitting()) {
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              Traitement...
+            </span>
+          } @else {
+            Confirmer l'annulation
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,173 @@
+<div class="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-10">
+  <div class="max-w-8xl mx-auto">
+
+    <!-- Header -->
+    <header class="mb-10 pt-4">
+      <div class="flex items-center gap-4 mb-4">
+        <div
+          class="w-16 h-16 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl">
+          <fa-icon [icon]="['fas', 'user-graduate']" class="text-white text-3xl"></fa-icon>
+        </div>
+        <div>
+          <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">Gestion des Stagiaires</h1>
+          <p class="text-gray-600 text-lg">Gerez les stagiaires et leur subvention (2 000 FCFA au lieu de 1 000
+            FCFA).</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <section class="mb-10">
+      @if (!isLoading()) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+          class="bg-white rounded-2xl shadow-xl p-6 border-l-8 border-orange-500 hover:shadow-2xl transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-semibold uppercase">Stagiaires</p>
+              <p class="text-3xl font-black text-orange-700 mt-1">{{ totalInterns() }}</p>
+              <p class="text-sm text-gray-500 mt-1">Subvention: 2 000 FCFA</p>
+            </div>
+            <fa-icon [icon]="['fas', 'user-graduate']" class="text-orange-500 text-4xl opacity-70"></fa-icon>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6 border-l-8 border-blue-500 hover:shadow-2xl transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-semibold uppercase">Non-Stagiaires</p>
+              <p class="text-3xl font-black text-blue-700 mt-1">{{ totalNonInterns() }}</p>
+              <p class="text-sm text-gray-500 mt-1">Subvention: 1 000 FCFA</p>
+            </div>
+            <fa-icon [icon]="['fas', 'users']" class="text-blue-500 text-4xl opacity-70"></fa-icon>
+          </div>
+        </div>
+
+        <div
+          class="bg-white rounded-2xl shadow-xl p-6 border-l-8 border-green-500 hover:shadow-2xl transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-semibold uppercase">Total Utilisateurs</p>
+              <p class="text-3xl font-black text-green-700 mt-1">{{ users().length }}</p>
+            </div>
+            <fa-icon [icon]="['fas', 'users-cog']" class="text-green-500 text-4xl opacity-70"></fa-icon>
+          </div>
+        </div>
+      </div>
+      }
+    </section>
+
+    <!-- Search & Filter Bar -->
+    <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-6 mb-8 border border-gray-200">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">Recherche & Filtres</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div class="relative lg:col-span-2">
+          <fa-icon [icon]="['fas', 'search']"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></fa-icon>
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
+            placeholder="Rechercher par nom ou username..."
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all" />
+        </div>
+
+        <!-- Filter buttons -->
+        <button (click)="onFilterChange('all')"
+          class="px-4 py-3 border border-gray-200 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-sm"
+          [ngClass]="activeFilter() === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'">
+          <fa-icon [icon]="['fas', 'list']"></fa-icon>
+          Tous ({{ users().length }})
+        </button>
+
+        <button (click)="onFilterChange('interns')"
+          class="px-4 py-3 border border-gray-200 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-sm"
+          [ngClass]="activeFilter() === 'interns' ? 'bg-orange-600 text-white border-orange-600' : 'bg-gray-50 text-gray-700 hover:bg-orange-50 hover:border-orange-300'">
+          <fa-icon [icon]="['fas', 'user-graduate']"></fa-icon>
+          Stagiaires ({{ totalInterns() }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (isLoading()) {
+    <div class="flex justify-center items-center py-24">
+      <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-orange-600"></div>
+    </div>
+    }
+
+    <!-- User Cards Grid -->
+    @if (!isLoading()) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (user of filteredUsers(); track user.id) {
+      <div
+        class="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-4 transform hover:scale-[1.01]"
+        [ngClass]="user.intern ? 'border-orange-400' : 'border-gray-200'">
+
+        <div class="p-5 sm:p-6">
+          <!-- User info -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1 min-w-0">
+              <h3 class="text-xl font-extrabold text-gray-900 truncate mb-1">
+                {{ getDisplayName(user) }}
+              </h3>
+              <p class="text-gray-500 text-sm truncate">{{ user.username }}</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold border-2 shrink-0"
+              [ngClass]="user.intern ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-gray-100 text-gray-600 border-gray-300'">
+              {{ user.intern ? 'Stagiaire' : 'Standard' }}
+            </span>
+          </div>
+
+          <!-- Subsidy info -->
+          <div class="rounded-2xl p-4 sm:p-5 mb-4 shadow-inner"
+            [ngClass]="user.intern ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 border border-gray-200'">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold uppercase text-gray-600 block mb-1">Subvention</span>
+                <div class="text-3xl font-black"
+                  [ngClass]="user.intern ? 'text-orange-700' : 'text-gray-700'">
+                  {{ formatAmount(user.subsidyAmount) }}
+                </div>
+              </div>
+              @if (user.intern) {
+                <fa-icon [icon]="['fas', 'user-graduate']" class="text-3xl opacity-70 text-orange-500"></fa-icon>
+              } @else {
+                <fa-icon [icon]="['fas', 'user']" class="text-3xl opacity-70 text-gray-400"></fa-icon>
+              }
+            </div>
+          </div>
+
+          <!-- Toggle Button -->
+          <button (click)="toggleInternStatus(user)"
+            [disabled]="processingUserId() === user.id"
+            class="w-full py-3 font-bold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-lg"
+            [ngClass]="user.intern
+              ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
+              : 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white'">
+            @if (processingUserId() === user.id) {
+            <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+            <span>Traitement...</span>
+            } @else if (user.intern) {
+            <fa-icon [icon]="['fas', 'user-minus']"></fa-icon>
+            <span>Retirer stagiaire</span>
+            } @else {
+            <fa-icon [icon]="['fas', 'user-plus']"></fa-icon>
+            <span>Ajouter stagiaire</span>
+            }
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Empty state -->
+    @if (filteredUsers().length === 0) {
+    <div class="text-center py-20 bg-white rounded-2xl shadow-xl mt-8">
+      <fa-icon [icon]="['fas', 'users-slash']" class="text-gray-300 text-7xl mb-6"></fa-icon>
+      <p class="text-gray-700 font-bold text-xl">Aucun utilisateur ne correspond aux criteres</p>
+      <p class="text-gray-500 text-md mt-2">Veuillez ajuster la recherche ou les filtres.</p>
+    </div>
+    }
+    }
+
+  </div>
+</div>

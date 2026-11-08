@@ -1,0 +1,152 @@
+<!-- Mosaïque : la composition dépend du nombre de photos -->
+@switch (layout()) {
+  @case ('single') {
+    <button
+      type="button"
+      (click)="open(0, $event)"
+      class="group block w-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
+      [attr.aria-label]="'Agrandir : ' + tiles()[0].alt"
+    >
+      <img
+        [src]="tiles()[0].url"
+        [alt]="tiles()[0].alt"
+        loading="lazy"
+        class="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+    </button>
+  }
+
+  @case ('pair') {
+    <div class="grid grid-cols-2 gap-3">
+      @for (photo of tiles(); track photo.id; let i = $index) {
+        <button
+          type="button"
+          (click)="open(i, $event)"
+          class="group overflow-hidden rounded-xl border border-gray-200 bg-gray-100"
+          [attr.aria-label]="'Agrandir : ' + photo.alt"
+        >
+          <img
+            [src]="photo.url"
+            [alt]="photo.alt"
+            loading="lazy"
+            class="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </button>
+      }
+    </div>
+  }
+
+  @case ('trio') {
+    <div class="grid aspect-[3/2] grid-cols-2 grid-rows-2 gap-3">
+      @for (photo of tiles(); track photo.id; let i = $index) {
+        <button
+          type="button"
+          (click)="open(i, $event)"
+          class="group overflow-hidden rounded-xl border border-gray-200 bg-gray-100"
+          [class.row-span-2]="i === 0"
+          [attr.aria-label]="'Agrandir : ' + photo.alt"
+        >
+          <img
+            [src]="photo.url"
+            [alt]="photo.alt"
+            loading="lazy"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </button>
+      }
+    </div>
+  }
+
+  @default {
+    <div class="grid aspect-[3/2] grid-cols-2 grid-rows-2 gap-3 sm:aspect-[2/1] sm:grid-cols-4">
+      @for (photo of tiles(); track photo.id; let i = $index) {
+        <button
+          type="button"
+          (click)="open(i, $event)"
+          class="group relative overflow-hidden rounded-xl border border-gray-200 bg-gray-100"
+          [class]="i === 0 ? 'col-span-2 row-span-2' : ''"
+          [attr.aria-label]="'Agrandir : ' + photo.alt"
+        >
+          <img
+            [src]="photo.url"
+            [alt]="photo.alt"
+            loading="lazy"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+
+          @if (i === tiles().length - 1 && overflowCount() > 0) {
+            <span
+              class="absolute inset-0 grid place-items-center bg-[#20264E]/65 text-xl font-black text-white backdrop-blur-[1px]"
+            >
+              +{{ overflowCount() }}
+            </span>
+          }
+        </button>
+      }
+    </div>
+  }
+}
+
+<!-- Visionneuse plein écran -->
+@if (currentPhoto(); as photo) {
+  <div
+    class="gallery-viewer fixed inset-0 z-[9999] flex flex-col bg-black/95"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Visionneuse de photos"
+    (click)="close()"
+  >
+    <!-- Barre supérieure -->
+    <div class="flex shrink-0 items-center justify-between gap-4 px-4 py-3 text-white/80">
+      <span class="text-sm font-bold tabular-nums">
+        {{ openIndex()! + 1 }} / {{ photos().length }}
+      </span>
+
+      <button
+        #closeButton
+        type="button"
+        (click)="close(); $event.stopPropagation()"
+        aria-label="Fermer la visionneuse"
+        class="grid h-10 w-10 place-items-center rounded-full transition-colors hover:bg-white/10 hover:text-white"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Image -->
+    <div class="flex min-h-0 flex-1 items-center justify-center px-4 pb-6">
+      <img
+        [src]="photo.url"
+        [alt]="photo.alt"
+        (click)="$event.stopPropagation()"
+        class="max-h-full max-w-full rounded-lg object-contain"
+      />
+    </div>
+
+    @if (photos().length > 1) {
+      <button
+        type="button"
+        (click)="step(-1); $event.stopPropagation()"
+        aria-label="Photo précédente"
+        class="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        (click)="step(1); $event.stopPropagation()"
+        aria-label="Photo suivante"
+        class="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    }
+  </div>
+}

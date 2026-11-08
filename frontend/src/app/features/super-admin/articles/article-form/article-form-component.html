@@ -1,0 +1,131 @@
+<!-- MODAL - Ajouter / Modifier un article -->
+<div
+  class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn"
+  (click)="close()">
+  <div class="relative w-full max-w-2xl mx-4" (click)="$event.stopPropagation()">
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp flex flex-col max-h-[90vh]">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-[#20264E] to-[#25509D] px-6 py-4 flex items-center justify-between shrink-0">
+        <h3 class="text-lg font-black text-white">
+          {{ isEditMode ? 'Modifier l\'article' : 'Ajouter un article' }}
+        </h3>
+        <button (click)="close()"
+          class="p-2 bg-[#E84141] hover:bg-[#6B140F] rounded-lg transition-all group" title="Fermer">
+          <svg class="w-5 h-5 text-white group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-[#303131] mb-1">Titre</label>
+          <input type="text" [ngModel]="title()" (ngModelChange)="title.set($event)"
+            placeholder="Titre de l'article"
+            class="w-full px-3 py-2 rounded-lg border border-[#E1E1E1] focus:border-[#25509D] focus:outline-none text-sm" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-[#303131] mb-1">Contenu</label>
+          <textarea [ngModel]="content()" (ngModelChange)="content.set($event)" rows="3"
+            placeholder="Description / résumé de l'article"
+            class="w-full px-3 py-2 rounded-lg border border-[#E1E1E1] focus:border-[#25509D] focus:outline-none text-sm resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-[#303131] mb-1">Catégorie</label>
+          <select [ngModel]="articleType()" (ngModelChange)="articleType.set($event)"
+            class="w-full px-3 py-2 rounded-lg border border-[#E1E1E1] focus:border-[#25509D] focus:outline-none text-sm bg-white">
+            <option *ngFor="let t of articleTypes" [value]="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-[#303131] mb-1">
+            Image de couverture (optionnel — JPEG, PNG){{ isEditMode ? ' — laisser vide pour conserver l\'actuelle' : '' }}
+          </label>
+          <label
+            class="flex flex-col items-center justify-center gap-2 px-4 py-5 rounded-xl border-2 border-dashed border-[#E1E1E1] hover:border-[#25509D] cursor-pointer transition-all">
+            <svg class="w-7 h-7 text-[#25509D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-sm text-[#303131]/70">
+              {{ selectedCover()?.name ?? 'Cliquez pour choisir une image de couverture' }}
+            </span>
+            <input type="file" accept=".jpg,.jpeg,.png" class="hidden" (change)="onCoverSelected($event)" />
+          </label>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-[#303131] mb-1">
+            Photos (optionnel — JPEG, PNG — {{ maxPhotos }} au maximum)
+          </label>
+
+          <!-- Photos déjà en ligne : la suppression est immédiate, pas à l'enregistrement -->
+          <div *ngIf="existingPhotos().length > 0" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+            <div *ngFor="let photo of existingPhotos()"
+              class="relative aspect-square rounded-lg overflow-hidden border border-[#E1E1E1] bg-gray-100">
+              <img [src]="photo.url" [alt]="photo.fileName" class="w-full h-full object-cover" />
+              <button type="button" (click)="removeExistingPhoto(photo)" [disabled]="submitting()"
+                [attr.aria-label]="'Supprimer ' + photo.fileName"
+                class="absolute top-1 right-1 w-6 h-6 grid place-items-center rounded-full bg-black/60 text-white hover:bg-[#E84141] transition-colors disabled:opacity-50">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Photos en attente d'envoi -->
+          <div *ngIf="pendingPhotos().length > 0" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+            <div *ngFor="let pending of pendingPhotos()"
+              class="relative aspect-square rounded-lg overflow-hidden border-2 border-dashed border-[#25509D]/40 bg-gray-100">
+              <img [src]="pending.previewUrl" [alt]="pending.file.name" class="w-full h-full object-cover" />
+              <button type="button" (click)="removePendingPhoto(pending)" [disabled]="submitting()"
+                [attr.aria-label]="'Retirer ' + pending.file.name"
+                class="absolute top-1 right-1 w-6 h-6 grid place-items-center rounded-full bg-black/60 text-white hover:bg-[#E84141] transition-colors disabled:opacity-50">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <span
+                class="absolute inset-x-0 bottom-0 bg-black/60 px-1 py-0.5 text-[10px] text-white text-center truncate">
+                {{ formatFileSize(pending.file.size) }}
+              </span>
+            </div>
+          </div>
+
+          <label *ngIf="remainingPhotoSlots() > 0"
+            class="flex flex-col items-center justify-center gap-1 px-4 py-4 rounded-xl border-2 border-dashed border-[#E1E1E1] hover:border-[#25509D] cursor-pointer transition-all">
+            <svg class="w-6 h-6 text-[#25509D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-sm text-[#303131]/70">Cliquez pour ajouter des photos</span>
+            <span class="text-xs text-[#303131]/45">
+              {{ remainingPhotoSlots() }} emplacement{{ remainingPhotoSlots() > 1 ? 's' : '' }} restant{{ remainingPhotoSlots() > 1 ? 's' : '' }}
+            </span>
+            <input type="file" multiple accept=".jpg,.jpeg,.png" class="hidden" (change)="onPhotosSelected($event)" />
+          </label>
+        </div>
+
+        <p *ngIf="error()" class="text-sm text-[#E84141] font-medium">{{ error() }}</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3 shrink-0">
+        <button (click)="close()" [disabled]="submitting()"
+          class="px-4 py-2 text-sm font-bold text-[#303131] bg-[#E1E1E1] hover:bg-[#d1d1d1] rounded-lg transition-all disabled:opacity-50">
+          Annuler
+        </button>
+        <button (click)="submit()" [disabled]="submitting()"
+          class="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-[#25509D] to-[#20264E] rounded-lg hover:shadow-md transition-all disabled:opacity-50">
+          {{ submitting() ? 'Enregistrement…' : (isEditMode ? 'Enregistrer' : 'Publier') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,308 @@
+/* Animation slide up pour l'apparition */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation pour le chat qui s'ouvre */
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animation pour les messages */
+.message-item {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animation pulse lente pour le halo */
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation du motif de fond */
+@keyframes pattern {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    transform: translateX(20px) translateY(20px);
+  }
+}
+
+.animate-pattern {
+  animation: pattern 20s linear infinite;
+}
+
+/* Scrollbar personnalisée améliorée */
+.chat-messages-container {
+  scrollbar-width: thin;
+  scrollbar-color: #25509d #f3f4f6;
+}
+
+.chat-messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #25509d 0%, #3d6bb5 100%);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #3d6bb5 0%, #25509d 100%);
+}
+
+/* Animation minimisée améliorée */
+.chat-minimized {
+  animation: minimizeChat 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes minimizeChat {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+/* Textarea auto-resize avec transition fluide */
+textarea {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+textarea:focus {
+  transform: translateY(-1px);
+}
+
+/* Animation bounce améliorée pour le typing indicator */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 0.7;
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* Smooth scroll behavior */
+.chat-messages-container {
+  scroll-behavior: smooth;
+}
+
+/* Hover effects pour les messages */
+.group\/message:hover .rounded-2xl {
+  transform: translateY(-1px);
+}
+
+/* Animation de rotation pour les icônes */
+@keyframes rotate-gentle {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Effet glassmorphism pour les éléments flottants */
+.backdrop-blur-xl {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
+.backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Amélioration des transitions globales */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Animation subtile pour les boutons */
+button {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* Effet de focus accessible */
+button:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #25509d;
+  outline-offset: 2px;
+}
+
+/* Animation pour le badge de notification */
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-ping {
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Styles responsive améliorés */
+@media (max-width: 640px) {
+  .chat-messages-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Amélioration de la lisibilité sur petits écrans */
+@media (max-width: 380px) {
+  textarea {
+    font-size: 14px;
+  }
+}
+
+/* Dark mode support (optionnel) */
+@media (prefers-color-scheme: dark) {
+  /* Vous pouvez ajouter des styles dark mode ici si nécessaire */
+}
+
+/* Amélioration des performances d'animation */
+.group\/message,
+.message-item,
+button,
+textarea {
+  will-change: transform;
+}
+
+/* Reset will-change après animation */
+.message-item:not(:hover) {
+  will-change: auto;
+}
+
+/* Effet de lueur sur focus pour meilleure accessibilité */
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(37, 80, 157, 0.1);
+}
+
+/* Animation subtile pour l'avatar */
+.group\/avatar:hover .relative {
+  transform: rotate(5deg) scale(1.05);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Styles pour le contenu formaté des messages */
+.message-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Styles pour les listes numérotées */
+.message-content .formatted-list {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.message-content ol.formatted-list {
+  list-style-type: decimal;
+}
+
+.message-content ul.formatted-list {
+  list-style-type: disc;
+}
+
+.message-content .formatted-list li {
+  margin: 6px 0;
+  line-height: 1.6;
+  padding-left: 4px;
+}
+
+.message-content .formatted-list li::marker {
+  font-weight: 600;
+}
+
+/* Styles pour les paragraphes */
+.message-content .message-paragraph {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.message-content .message-paragraph:first-child {
+  margin-top: 0;
+}
+
+.message-content .message-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+/* Styles pour les sauts de ligne */
+.message-content br {
+  display: block;
+  content: '';
+  margin: 4px 0;
+}
+
+/* Ajustements pour les messages utilisateur avec fond coloré */
+[class~="bg-gradient-to-br"][class~="from-[#25509d]"] .message-content .formatted-list li::marker {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Ajustements pour les messages bot avec fond blanc */
+.bg-white .message-content .formatted-list li::marker {
+  color: #25509d;
+}
+
+/* Espacement entre les éléments de liste */
+.message-content .formatted-list li + li {
+  margin-top: 8px;
+}
+
+/* Styles pour les titres éventuels */
+.message-content strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Meilleure lisibilité pour les longs textes */
+.message-content {
+  max-width: 100%;
+  text-align: left;
+}

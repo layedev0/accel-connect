@@ -1,0 +1,251 @@
+/* ============================================
+   ANIMATIONS GLOBALES
+   ============================================ */
+
+/* Animation fade in standard */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Animation slide in pour les items */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Animation shake pour les erreurs */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Animation shine pour effet brillant au hover */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================
+   TOOLTIP SYSTÈME - RESPONSIVE
+   ============================================ */
+
+/* Cursor help pour indiquer l'interactivité */
+.cursor-help {
+  cursor: help;
+}
+
+/* Line clamp pour texte multi-lignes */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Z-index hiérarchie */
+.z-\[100\] {
+  z-index: 100;
+}
+
+.z-\[9999\] {
+  z-index: 9999;
+}
+
+/* Pointer events pour éviter les conflits */
+.pointer-events-none {
+  pointer-events: none;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS PERSONNALISÉS
+   ============================================ */
+
+/* Extra small devices (phones en portrait, moins de 375px) */
+@media (max-width: 374px) {
+  .group\/tooltip:hover .animate-fadeIn {
+    max-width: 180px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .group\/tooltip:hover .animate-fadeIn svg {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+}
+
+/* Small devices (phones, 375px - 639px) */
+@media (min-width: 375px) and (max-width: 639px) {
+  .group\/tooltip:hover .animate-fadeIn {
+    max-width: 200px !important;
+  }
+}
+
+/* Medium devices (tablets, 640px - 767px) */
+@media (min-width: 640px) and (max-width: 767px) {
+  .group\/tooltip:hover .animate-fadeIn {
+    max-width: 280px !important;
+  }
+}
+
+/* Large devices (desktops, 768px et plus) */
+@media (min-width: 768px) {
+  .group\/tooltip:hover .animate-fadeIn {
+    max-width: 384px !important;
+  }
+}
+
+/* ============================================
+   OPTIMISATIONS TOOLTIP
+   ============================================ */
+
+/* Assurer que le tooltip ne dépasse pas l'écran */
+.group\/tooltip {
+  position: relative;
+}
+
+.group\/tooltip:hover > div[class*="animate-fadeIn"] {
+  /* Ajustement automatique si trop près du bord droit */
+  left: 0;
+  right: auto;
+}
+
+/* Si proche du bord gauche, ajuster */
+@media (max-width: 640px) {
+  .group\/tooltip:hover > div[class*="animate-fadeIn"] {
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+  }
+}
+
+/* ============================================
+   AMÉLIORATIONS VISUELLES
+   ============================================ */
+
+/* Effet de brillance au hover sur les cartes de plat */
+.group\/item:hover .shine-effect {
+  animation: shine 2s ease-in-out infinite;
+}
+
+/* Transition douce pour tous les éléments interactifs */
+.group\/item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Amélioration du focus pour l'accessibilité */
+.group\/tooltip:focus-within > div[class*="animate-fadeIn"] {
+  display: block;
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .group\/tooltip:hover .animate-fadeIn {
+    background: linear-gradient(to bottom right, #374151, #1f2937);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Hardware acceleration pour les animations */
+.animate-fadeIn,
+.animate-slideIn,
+.group\/item {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Désactiver les animations si l'utilisateur préfère reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn,
+  .animate-slideIn,
+  .animate-shake,
+  .animate-pulse {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================
+   UTILITAIRES SUPPLÉMENTAIRES
+   ============================================ */
+
+/* Break words pour les longs textes */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Empêcher la sélection du texte dans le tooltip (optionnel) */
+.group\/tooltip:hover .animate-fadeIn {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* ============================================
+   FIX POUR PETITS ÉCRANS
+   ============================================ */
+
+/* Sur très petits écrans, forcer le tooltip à rester visible */
+@media (max-width: 374px) {
+  .group\/tooltip:hover .animate-fadeIn {
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    max-width: 90vw !important;
+  }
+}
+
+/* ============================================
+   AMÉLIORATION DE LA LISIBILITÉ
+   ============================================ */
+
+/* Augmenter légèrement l'espacement des lignes dans le tooltip */
+.group\/tooltip:hover .animate-fadeIn p {
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+/* Améliorer le contraste pour la lecture */
+.group\/tooltip:hover .animate-fadeIn {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,12 @@
+{
+  "apiUrl": "http://localhost:8085/api/v1",
+  "apiUrlForChat": "https://alex.apps.origins.heritage.africa",
+  "keycloak": {
+    "url": "http://localhost:8585",
+    "realm": "accel",
+    "clientId": "accel"
+  }
+}
+
+
+

@@ -1,0 +1,320 @@
+<!-- Bouton flottant pour ouvrir le chat -->
+<button
+  type="button"
+  (click)="toggleChat()"
+  class="fixed z-50 bottom-6 right-6 md:bottom-8 md:right-8 group"
+  aria-label="Ouvrir le chatbot"
+  *ngIf="!isOpen"
+>
+  <div class="relative">
+    <!-- Effet de halo animé -->
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-[#25509d] to-[#3d6bb5] rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"
+    ></div>
+
+    <!-- Bouton principal -->
+    <div
+      class="relative w-16 h-16 md:w-[72px] md:h-[72px] rounded-3xl bg-gradient-to-br from-[#25509d] to-[#3d6bb5] shadow-2xl shadow-[#25509d]/50 hover:shadow-[#25509d]/70 hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer"
+    >
+      <!-- Effet de brillance au survol -->
+      <div
+        class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+      ></div>
+
+      <img
+        src="assets/gif/chat-bot.gif"
+        alt="Assistant Alex"
+        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+      />
+    </div>
+
+    <!-- Badge de notification animé -->
+    <span class="absolute -top-1 -right-1 flex h-5 w-5">
+      <span
+        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4ade80] opacity-75"
+      ></span>
+      <span
+        class="relative inline-flex rounded-full h-5 w-5 bg-[#4ade80] border-2 border-white shadow-lg"
+      ></span>
+    </span>
+
+    <!-- Tooltip amélioré -->
+    <div
+      class="absolute bottom-full right-0 mb-4 px-5 py-3 bg-gray-900/95 backdrop-blur-sm text-white text-sm font-semibold rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-2xl pointer-events-none group-hover:-translate-y-1"
+    >
+      <div class="flex items-center gap-2">
+        <span
+          class="w-2 h-2 bg-[#4ade80] rounded-full animate-pulse shadow-[#4ade80]/50 shadow-lg"
+        ></span>
+        <span>Discuter avec Alex</span>
+      </div>
+      <div class="absolute -bottom-1.5 right-6 w-3 h-3 bg-gray-900/95 rotate-45"></div>
+    </div>
+  </div>
+</button>
+
+<!-- Fenêtre de chat -->
+<div
+  *ngIf="isOpen"
+  class="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col shadow-2xl animate-slide-up"
+  [class.chat-minimized]="isMinimized"
+>
+  <!-- Container principal -->
+  <div
+    class="w-[90vw] max-w-[420px] h-[600px] max-h-[85vh] bg-white/95 backdrop-blur-xl rounded-3xl overflow-hidden flex flex-col transition-all duration-300 shadow-2xl border border-gray-200/50"
+    [class.h-auto]="isMinimized"
+  >
+    <!-- Header amélioré -->
+    <div class="relative bg-gradient-to-br from-[#25509d] to-[#3d6bb5] p-6 pb-8 overflow-hidden">
+      <!-- Motif de fond animé -->
+      <div class="absolute inset-0 opacity-10">
+        <div
+          class="absolute inset-0 animate-pattern"
+          style="
+            background-image: radial-gradient(circle, #99cfbd 1px, transparent 1px);
+            background-size: 20px 20px;
+          "
+        ></div>
+      </div>
+
+      <!-- Effet de lumière -->
+      <div
+        class="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white/20 to-transparent blur-2xl"
+      ></div>
+
+      <!-- Contenu du header -->
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Avatar Alex avec animation améliorée -->
+          <div class="relative group/avatar">
+            <!-- Glow effect -->
+            <div
+              class="absolute inset-0 bg-white/30 rounded-2xl blur-md group-hover/avatar:blur-lg transition-all"
+            ></div>
+
+            <div
+              class="relative w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/40 overflow-hidden shadow-xl"
+            >
+              <img src="assets/gif/chat-bot.gif" alt="Alex" class="w-full h-full object-cover" />
+            </div>
+
+            <!-- Badge en ligne amélioré -->
+            <span class="absolute -bottom-1 -right-1 flex h-5 w-5">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4ade80] opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-5 w-5 bg-[#4ade80] border-2 border-white shadow-lg shadow-[#4ade80]/50"
+              ></span>
+            </span>
+          </div>
+
+          <!-- Info Alex -->
+          <div class="text-white">
+            <h3 class="text-lg font-black tracking-tight">Alex</h3>
+            <div class="flex items-center gap-2 text-sm">
+              <span
+                class="w-1.5 h-1.5 bg-[#4ade80] rounded-full animate-pulse shadow-lg shadow-[#4ade80]/50"
+              ></span>
+              <span class="text-white/90 font-medium">En ligne</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons d'action améliorés -->
+        <div class="flex items-center gap-2">
+          <button
+            (click)="minimizeChat()"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+            aria-label="Minimiser"
+          >
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M20 12H4"
+              />
+            </svg>
+          </button>
+          <button
+            (click)="closeChat()"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-red-500 backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+            aria-label="Fermer"
+          >
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Vague décorative améliorée -->
+      <div class="absolute -bottom-6 left-0 right-0 h-12">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-full">
+          <path
+            d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+            fill="rgba(255, 255, 255, 0.95)"
+            fill-opacity="1"
+          ></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Corps du chat -->
+    <div
+      *ngIf="!isMinimized"
+      class="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-gray-50/50 to-white"
+    >
+      <!-- Zone des messages -->
+      <div class="flex-1 overflow-y-auto px-6 py-6 space-y-4 chat-messages-container">
+        <!-- Messages -->
+        <div
+          *ngFor="let msg of messages"
+          class="flex message-item"
+          [class.justify-end]="msg.type === 'user'"
+        >
+          <div
+            class="max-w-[80%] group/message"
+            [class.flex-row-reverse]="msg.type === 'user'"
+            [class.flex]="msg.type === 'bot'"
+          >
+            <!-- Avatar pour les messages du bot -->
+            <div *ngIf="msg.type === 'bot'" class="flex-shrink-0 mr-3">
+              <div
+                class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#25509d] to-[#3d6bb5] flex items-center justify-center shadow-lg transform transition-transform group-hover/message:scale-110"
+              >
+                <svg
+                  class="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Bulle de message améliorée -->
+            <div class="flex flex-col">
+              <div
+                class="rounded-2xl px-4 py-3 shadow-lg transition-all duration-300 group-hover/message:shadow-xl"
+                [ngClass]="{
+                  'bg-gradient-to-br from-[#25509d] to-[#3d6bb5] text-white rounded-br-md':
+                    msg.type === 'user',
+                  'bg-white border border-gray-200 text-gray-800 rounded-bl-md hover:border-gray-300':
+                    msg.type === 'bot'
+                }"
+              >
+                <div
+                  class="text-sm leading-relaxed message-content"
+                  [innerHTML]="msg.content"
+                ></div>
+              </div>
+              <span
+                class="text-xs text-gray-400 mt-1.5 px-1 font-medium"
+                [class.text-right]="msg.type === 'user'"
+              >
+                {{ msg.time }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicateur de frappe amélioré -->
+        <div *ngIf="isTyping" class="flex items-center gap-3 animate-slide-up">
+          <div
+            class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#25509d] to-[#3d6bb5] flex items-center justify-center shadow-lg"
+          >
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div
+            class="bg-white border border-gray-200 rounded-2xl rounded-bl-md px-5 py-4 shadow-lg"
+          >
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 bg-[#25509d] rounded-full animate-bounce"></div>
+              <div
+                class="w-2 h-2 bg-[#25509d] rounded-full animate-bounce"
+                style="animation-delay: 0.2s"
+              ></div>
+              <div
+                class="w-2 h-2 bg-[#25509d] rounded-full animate-bounce"
+                style="animation-delay: 0.4s"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone de saisie améliorée -->
+      <div class="p-5 bg-white/80 backdrop-blur-xl border-t border-gray-200/50">
+        <div class="flex items-end gap-3">
+          <!-- Input amélioré -->
+          <div class="flex-1 relative">
+            <textarea
+              [(ngModel)]="message"
+              (keypress)="handleKeyPress($event)"
+              placeholder="Écrivez votre message..."
+              rows="1"
+              class="w-full px-4 py-3.5 bg-gray-100 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#25509d] focus:bg-white resize-none text-sm transition-all placeholder:text-gray-400 hover:border-gray-300 focus:shadow-lg focus:shadow-[#25509d]/10"
+              style="max-height: 120px"
+            ></textarea>
+          </div>
+
+          <!-- Bouton envoyer amélioré -->
+          <button
+            (click)="sendMessage()"
+            [disabled]="!message.trim()"
+            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#25509d] to-[#3d6bb5] rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl hover:shadow-[#25509d]/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 group/send"
+            aria-label="Envoyer"
+          >
+            <svg
+              class="w-5 h-5 text-white group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Powered by amélioré -->
+        <div class="flex items-center justify-center gap-2 mt-4">
+          <div
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-gray-50 to-blue-50 rounded-full border border-gray-200/50"
+          >
+            <svg class="w-3.5 h-3.5 text-[#25509d]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            <span class="text-xs text-gray-600 font-medium"
+              >Propulsé par <span class="font-bold text-[#25509d]">Accel Tech</span></span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

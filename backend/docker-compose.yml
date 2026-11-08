@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres
+    container_name: postgresAC
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: accel-connect
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin 
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:

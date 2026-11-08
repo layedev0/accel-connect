@@ -1,0 +1,178 @@
+<!-- Navigation Header -->
+<nav
+  class="sticky top-0 z-50 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 shadow-sm"
+>
+  <div class="px-4 mx-auto max-w-[1600px] sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo et marque -->
+      <div routerLink="/admin" class="flex cursor-pointer items-center gap-3">
+        <div
+          class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg"
+        >
+          <img
+            [src]="logoUrl"
+            alt="AccelConnect Logo"
+            class="relative h-7 w-7 sm:h-8 sm:w-8 object-contain group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"
+          />
+        </div>
+        <div class="hidden sm:block">
+          <h1 class="text-xl font-bold text-gray-900 dark:text-white">Accel Connect</h1>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Restauration</p>
+        </div>
+      </div>
+
+      <!-- Navigation Desktop -->
+      <div class="hidden lg:flex lg:items-center lg:gap-2">
+        @for (link of navigationLinks; track link.route) {
+        <a
+          [routerLink]="link.route"
+          routerLinkActive="bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+        >
+          <fa-icon [icon]="['fas', link.icon]" class="text-base"></fa-icon>
+          {{ link.name }}
+        </a>
+        }
+      </div>
+
+      <!-- Actions Desktop -->
+      <div class="hidden lg:flex lg:items-center lg:gap-3">
+        <!-- Notifications -->
+        <button
+          class="relative p-2 text-gray-600 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+        >
+          <fa-icon [icon]="['fas', 'bell']" class="text-xl"></fa-icon>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+
+        <!-- User Menu -->
+        <div class="relative">
+          <button
+            (click)="toggleUserMenu()"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <img [src]="avatarUrl()" [alt]="getDisplayName()" class="w-8 h-8 rounded-lg" />
+            <div class="hidden xl:block text-left">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                {{ getDisplayName() }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ getDisplayEmail() }}
+              </p>
+            </div>
+            <fa-icon
+              [icon]="['fas', 'chevron-down']"
+              class="text-gray-500 dark:text-gray-400 text-sm"
+            ></fa-icon>
+          </button>
+
+          <!-- Dropdown Menu -->
+          @if (userMenuOpen) {
+          <div
+            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-hidden z-50"
+          >
+            <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                {{ getDisplayName() }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ getDisplayEmail() }}
+              </p>
+            </div>
+            <div class="py-2">
+              <button
+                routerLink="/profile"
+                (click)="toggleUserMenu()"
+                class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              >
+                <fa-icon [icon]="['fas', 'user']" class="text-base"></fa-icon>
+                Mon Profil
+              </button>
+              <button
+                routerLink="/settings"
+                (click)="toggleUserMenu()"
+                class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              >
+                <fa-icon [icon]="['fas', 'gear']" class="text-base"></fa-icon>
+                Paramètres
+              </button>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
+              <button
+                (click)="logout()"
+                class="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors"
+              >
+                <fa-icon [icon]="['fas', 'right-from-bracket']" class="text-base"></fa-icon>
+                Déconnexion
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Menu Mobile Button -->
+      <button
+        (click)="toggleMobileMenu()"
+        class="lg:hidden p-2 text-gray-600 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+      >
+        @if (!mobileMenuOpen) {
+        <fa-icon [icon]="['fas', 'bars']" class="text-xl"></fa-icon>
+        } @if (mobileMenuOpen) {
+        <fa-icon [icon]="['fas', 'xmark']" class="text-xl"></fa-icon>
+        }
+      </button>
+    </div>
+
+    <!-- Menu Mobile -->
+    @if (mobileMenuOpen) {
+    <div class="lg:hidden border-t border-gray-200 dark:border-gray-800 py-4">
+      <div class="space-y-1">
+        @for (link of navigationLinks; track link.route) {
+        <a
+          [routerLink]="link.route"
+          routerLinkActive="bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+          (click)="closeMobileMenu()"
+          class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+        >
+          <fa-icon [icon]="['fas', link.icon]" class="text-lg"></fa-icon>
+          {{ link.name }}
+        </a>
+        }
+      </div>
+
+      <!-- User Info Mobile -->
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+        <div class="flex items-center gap-3 px-4 py-2">
+          <img [src]="avatarUrl()" [alt]="getDisplayName()" class="w-10 h-10 rounded-lg" />
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">
+              {{ getDisplayName() }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ getDisplayEmail() }}
+            </p>
+          </div>
+        </div>
+        <div class="mt-2 space-y-1">
+          <button
+            routerLink="/profile"
+            (click)="closeMobileMenu()"
+            class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            <fa-icon [icon]="['fas', 'user']" class="text-base"></fa-icon>
+            Mon Profil
+          </button>
+          <button
+            (click)="logout()"
+            class="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+          >
+            <fa-icon [icon]="['fas', 'right-from-bracket']" class="text-base"></fa-icon>
+            Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</nav>

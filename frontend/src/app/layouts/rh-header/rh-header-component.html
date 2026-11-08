@@ -1,0 +1,64 @@
+<header class="rh-header sticky top-0 z-40 flex items-center justify-between gap-4 bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+  <div class="flex items-center gap-4 min-w-0 flex-1 overflow-x-auto">
+    <!-- Icône Accueil -->
+    <a
+      routerLink="/"
+      class="flex shrink-0 items-center justify-center w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-[#25509d]/10 hover:text-[#25509d] transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+        />
+      </svg>
+    </a>
+
+    @if (isEmployeeProfile()) {
+      <!-- Retour liste employés (icône "é" / flèche) -->
+
+      <div class="shrink-0 w-px h-6 bg-gray-200" aria-hidden="true"></div>
+      <!-- Onglets profil employé -->
+      <nav class="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 min-w-0">
+        @for (tab of profileTabs; track tab.label + tab.route) {
+          @if (tab.route === '#') {
+            <span
+              class="shrink-0 px-3 py-2 text-sm font-medium text-gray-500 rounded-lg bg-gray-100 cursor-default whitespace-nowrap"
+            >
+              {{ tab.label }}
+            </span>
+          } @else {
+            <a
+              [routerLink]="tab.route"
+              class="shrink-0 flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+              [class.bg-[#25509d]]="isProfileTabActive(tab)"
+              [class.text-white]="isProfileTabActive(tab)"
+              [class.hover:bg-[#1e3d7a]]="isProfileTabActive(tab)"
+              [class.text-gray-600]="!isProfileTabActive(tab)"
+              [class.bg-gray-100]="!isProfileTabActive(tab)"
+              [class.hover:bg-gray-200]="!isProfileTabActive(tab)"
+              [class.hover:text-gray-900]="!isProfileTabActive(tab)"
+            >
+              {{ tab.label }}
+            </a>
+          }
+        }
+      </nav>
+    } @else {
+      <!-- Onglets liste employés / congé -->
+      <nav class="hidden md:flex items-center gap-1">
+        @for (tab of mainTabs; track tab.route) {
+          <a
+            [routerLink]="tab.route"
+            routerLinkActive="!bg-[#25509d] !text-white !border-[#25509d]"
+            class="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-600 rounded-lg border-2 border-transparent hover:bg-gray-50 hover:text-gray-900 transition-colors [&.router-link-active]:hover:!bg-[#25509d] [&.router-link-active]:hover:!text-white"
+          >
+            {{ tab.label }}
+          </a>
+        }
+      </nav>
+    }
+  </div>
+
+</header>

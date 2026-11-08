@@ -1,0 +1,241 @@
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+/* second-section-component.css */
+
+/* Animations pour le modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Smooth scroll et transitions */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Style pour l'iframe PDF */
+iframe {
+  border: none;
+  background: white;
+}
+
+/* Hover effects pour les cards */
+.group:hover .group-hover\:scale-110 {
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .animate-slideUp {
+    animation-duration: 0.3s;
+  }
+
+  .news-card,
+  .news-card__content {
+    min-height: 190px;
+  }
+
+  .news-card__title {
+    font-size: 0.95rem;
+  }
+
+  .news-card__arrow {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .news-card__meta,
+  .news-card__badge {
+    font-size: 0.8rem;
+  }
+}
+
+/* Actualites layout */
+.news-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.news-card {
+  position: relative;
+  min-height: 210px;
+  border-radius: 1.75rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, #2f5dab 0%, #20264e 100%);
+  box-shadow: 0 16px 36px rgba(32, 38, 78, 0.12);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 44px rgba(32, 38, 78, 0.18);
+}
+
+.news-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.news-card:hover .news-card__image {
+  transform: scale(1.06);
+}
+
+.news-card__overlay {
+  --news-accent: #25509d;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--news-accent) 82%, transparent) 0%, rgba(32, 38, 78, 0.22) 45%, rgba(20, 24, 51, 0.92) 100%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 55%);
+}
+
+.news-card__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 210px;
+  padding: 1rem 1.25rem 1.1rem;
+}
+
+.news-card__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #20264e;
+  box-shadow: 0 10px 24px rgba(32, 38, 78, 0.2);
+  transform: translateY(-50%);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.news-card__arrow:hover {
+  background: #25509d;
+  color: #fff;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.news-card__arrow--left {
+  left: 0.75rem;
+}
+
+.news-card__arrow--right {
+  right: 0.75rem;
+}
+
+.news-card__badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.85rem;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.news-card__text {
+  color: #fff;
+}
+
+.news-card__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-card__meta {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .news-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .news-card,
+  .news-card__content {
+    min-height: 212px;
+  }
+}
+
+/* Loading state pour PDF */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

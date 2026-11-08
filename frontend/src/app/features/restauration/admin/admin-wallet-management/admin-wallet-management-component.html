@@ -1,0 +1,360 @@
+<div class="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-10">
+  <div class="max-w-8xl mx-auto">
+    <header class="mb-10 pt-4">
+      <div class="flex items-center gap-4 mb-4">
+        <div
+          class="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-xl">
+          <fa-icon [icon]="['fas', 'wallet']" class="text-white text-3xl"></fa-icon>
+        </div>
+        <div>
+          <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">Gestion des Portefeuilles</h1>
+          <p class="text-gray-600 text-lg">Tableau de bord pour gérer les dépôts, dettes et soldes des utilisateurs.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques Globales</h2>
+      @if (!isLoading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border-l-8 border-red-500 hover:shadow-2xl transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-semibold uppercase">Total Dettes</p>
+              <p class="text-3xl font-black text-red-700 mt-1">
+                {{ formatAmount(globalStats().totalDebt) }}
+              </p>
+
+            </div>
+            <fa-icon [icon]="['fas', 'exclamation-triangle']" class="text-red-500 text-4xl opacity-70"></fa-icon>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6 border-l-8 border-green-500 hover:shadow-2xl transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-semibold uppercase">À Rembourser (Crédit)</p>
+              <p class="text-3xl font-black text-green-700 mt-1">
+                {{ formatAmount(globalStats().totalRefundable) }}
+              </p>
+            </div>
+            <fa-icon [icon]="['fas', 'hand-holding-usd']" class="text-green-500 text-4xl opacity-70"></fa-icon>
+          </div>
+        </div>
+      </div>
+      }
+    </section>
+
+    <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-6 mb-8 border border-gray-200">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">Recherche & Tri des Utilisateurs</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="relative lg:col-span-2">
+          <fa-icon [icon]="['fas', 'search']" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></fa-icon>
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Rechercher par nom ou email..."
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all" />
+        </div>
+
+        <button (click)="sortByBalance(false)"
+          class="px-4 py-3 bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:border-blue-300 rounded-xl font-bold text-gray-700 transition-colors flex items-center justify-center gap-2 text-sm">
+          <fa-icon [icon]="['fas', 'sort-numeric-down-alt']"></fa-icon>
+          <span class="inline">Solde (Décroissant)</span>
+        </button>
+
+        <button (click)="sortByName()"
+          class="px-4 py-3 bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:border-blue-300 rounded-xl font-bold text-gray-700 transition-colors flex items-center justify-center gap-2 text-sm">
+          <fa-icon [icon]="['fas', 'sort-alpha-down']"></fa-icon>
+          <span class="inline">Nom (A-Z)</span>
+        </button>
+
+        <select (change)="filterByStatus($any($event.target).value)"
+          class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 bg-white transition-all text-gray-700 font-semibold text-sm">
+          <option value="all">Tous les Statuts</option>
+          <option value="debt">Avec Dette</option>
+          <option value="refundable">À Rembourser</option>
+          <option value="settled">En Règle (Solde Nul)</option>
+        </select>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+    <div class="flex justify-center items-center py-24">
+      <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-blue-600"></div>
+    </div>
+    }
+
+    @if (!isLoading()) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (user of filteredUsers(); track user.userId) {
+      <div
+        class="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-4 border-white transform hover:scale-[1.01]"
+        [class.border-red-400]="user.hasDebt" [class.border-green-400]="user.refundableAmount > 0 && !user.hasDebt"
+        [class.border-blue-400]="!user.hasDebt && user.refundableAmount === 0">
+        <div class="p-5 sm:p-6 pb-2">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1 min-w-0">
+              <h3 class="text-xl font-extrabold text-gray-900 truncate mb-1">{{ user.username }}</h3>
+              <p class="text-gray-500 text-sm truncate">{{ user.email }}</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold border-2 shrink-0"
+              [ngClass]="getStatusColor(user.status)">
+              {{ user.status }}
+            </span>
+          </div>
+
+          <div class="rounded-2xl p-4 sm:p-5 mb-4 shadow-inner" [class.bg-red-50]="user.hasDebt"
+            [class.border-red-200]="user.hasDebt" [class.bg-green-50]="user.refundableAmount > 0 && !user.hasDebt"
+            [class.border-green-200]="user.refundableAmount > 0 && !user.hasDebt"
+            [class.bg-blue-50]="!user.hasDebt && user.refundableAmount === 0"
+            [class.border-blue-200]="!user.hasDebt && user.refundableAmount === 0">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold uppercase text-gray-600 block mb-1">Solde Actuel</span>
+                <div class="text-3xl font-black" [class.text-red-700]="user.hasDebt"
+                  [class.text-green-700]="user.refundableAmount > 0 && !user.hasDebt"
+                  [class.text-gray-900]="!user.hasDebt && user.refundableAmount === 0">
+                  {{ formatAmount(user.balance) }}
+                </div>
+              </div>
+              <fa-icon [icon]="['fas', 'wallet']" class="text-3xl opacity-70" [class.text-red-500]="user.hasDebt"
+                [class.text-green-500]="user.refundableAmount > 0 && !user.hasDebt"
+                [class.text-blue-500]="!user.hasDebt && user.refundableAmount === 0"></fa-icon>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-5 sm:p-6 pt-0 space-y-4">
+          <button (click)="selectUser(user)"
+            class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mt-4 text-lg">
+            <fa-icon [icon]="['fas', 'cog']"></fa-icon>
+            Gérer le portefeuille
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    @if (filteredUsers().length === 0 && !isLoading()) {
+    <div class="text-center py-20 bg-white rounded-2xl shadow-xl mt-8">
+      <fa-icon [icon]="['fas', 'users-slash']" class="text-gray-300 text-7xl mb-6"></fa-icon>
+      <p class="text-gray-700 font-bold text-xl">Aucun utilisateur ne correspond aux critères</p>
+      <p class="text-gray-500 text-md mt-2">Veuillez ajuster la recherche ou les filtres.</p>
+    </div>
+    } }
+  </div>
+
+  <div class="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-10">
+    @if (selectedUser()) {
+    <div
+      class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 sm:p-8 z-50 overflow-y-auto pt-16"
+      (click)="closeDepositModal()">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full my-8 transform transition-all duration-300 scale-100"
+        (click)="$event.stopPropagation()">
+
+        <div class="bg-gradient-to-r from-blue-700 to-purple-800 p-4 sticky top-0 z-20 rounded-t-3xl">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h2 class="text-xl font-black text-white mb-0">Gestion du Portefeuille</h2>
+              <p class="text-white/90 font-medium text-lg">{{ selectedUser()!.username }}</p>
+              <p class="text-white/70 text-xs">{{ selectedUser()!.email }}</p>
+            </div>
+            <button (click)="closeDepositModal()"
+              class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors shrink-0">
+              <fa-icon [icon]="['fas', 'times']" class="text-white text-lg"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 sm:p-8">
+
+
+          <div class="flex border-b border-gray-200 mb-6 bg-white pt-2 z-10">
+            <button (click)="activeTab.set('deposit')"
+              class="px-4 sm:px-6 py-3 text-sm sm:text-base font-bold transition-all border-b-4"
+              [ngClass]="activeTab() === 'deposit' ? 'text-green-600 border-green-600' : 'text-gray-500 border-transparent hover:text-green-500 hover:border-green-200'">
+              <fa-icon [icon]="['fas', 'plus-circle']" class="mr-2"></fa-icon>
+              Faire un Dépôt
+            </button>
+            <button (click)="activeTab.set('debt')"
+              class="px-4 sm:px-6 py-3 text-sm sm:text-base font-bold transition-all border-b-4"
+              [ngClass]="activeTab() === 'debt' ? 'text-red-600 border-red-600' : 'text-gray-500 border-transparent hover:text-red-500 hover:border-red-200'">
+              <fa-icon [icon]="['fas', 'minus-circle']" class="mr-2"></fa-icon>
+              Ajouter une Dette
+            </button>
+            <button (click)="activeTab.set('update')"
+              class="px-4 sm:px-6 py-3 text-sm sm:text-base font-bold transition-all border-b-4"
+              [ngClass]="activeTab() === 'update' ? 'text-purple-600 border-purple-600' : 'text-gray-500 border-transparent hover:text-purple-500 hover:border-purple-200'">
+              <fa-icon [icon]="['fas', 'sync-alt']" class="mr-2"></fa-icon>
+              Ajuster le Solde
+            </button>
+          </div>
+
+          <div class="tab-content">
+            @if (activeTab() === 'deposit') {
+            <div class="border-2 border-green-300 rounded-2xl p-6 sm:p-8 bg-green-50/50 shadow-lg">
+              <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2 text-green-700">
+                <fa-icon [icon]="['fas', 'plus-circle']"></fa-icon>
+                Enregistrer un nouveau Dépôt
+              </h3>
+
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-md font-extrabold text-gray-700 mb-2">Montant du Dépôt (FCFA) *</label>
+                  <input type="number" [(ngModel)]="depositAmount" [min]="0" [step]="1000" placeholder="Ex: 10 000"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 text-xl font-bold transition-all" />
+                </div>
+
+                <div>
+                  <label class="block text-md font-extrabold text-gray-700 mb-2">Description / Référence</label>
+                  <input type="text" [(ngModel)]="depositDescription" placeholder="Paiement Mounassib"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all" />
+                </div>
+
+                @if (depositAmount() && depositAmount()! > 0) {
+                <div class="bg-green-100 border-2 border-green-300 rounded-xl p-5">
+                  <p class="text-sm text-green-700 font-semibold mb-1">Nouveau solde prévu</p>
+                  <p class="text-3xl font-black text-green-800">
+                    {{ formatAmount(selectedUser()!.balance + depositAmount()!) }}
+                  </p>
+                </div>
+                }
+
+                <button (click)="makeDeposit()" [disabled]="isDepositing() || !depositAmount() || depositAmount()! <= 0"
+                  class="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg">
+                  @if (isDepositing()) {
+                  <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+                  <span>Traitement...</span>
+                  } @else {
+                  <fa-icon [icon]="['fas', 'check-circle']"></fa-icon>
+                  <span>Confirmer le Dépôt</span>
+                  }
+                </button>
+              </div>
+            </div>
+            }
+
+            @if (activeTab() === 'debt') {
+            <div class="border-2 border-red-300 rounded-2xl p-6 sm:p-8 bg-red-50/50 shadow-lg">
+              <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2 text-red-700">
+                <fa-icon [icon]="['fas', 'minus-circle']"></fa-icon>
+                Enregistrer une nouvelle Dette
+              </h3>
+
+              <div class="bg-yellow-50 border border-yellow-400 rounded-xl p-4 mb-6">
+                <p class="text-sm text-yellow-800 flex items-start gap-2">
+                  <fa-icon [icon]="['fas', 'info-circle']" class="mt-1 shrink-0"></fa-icon>
+                  <span>**Attention** : Ceci diminue le solde de l'utilisateur ou le fait passer en négatif (dette
+                    envers
+                    l'organisation).</span>
+                </p>
+              </div>
+
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-md font-extrabold text-gray-700 mb-2">Montant de la Dette (FCFA) *</label>
+                  <input type="number" [(ngModel)]="debtAmount" [min]="0" [step]="1000" placeholder="Ex: 5 000"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-100 focus:border-red-500 text-xl font-bold transition-all" />
+                </div>
+
+                <div>
+                  <label class="block text-md font-extrabold text-gray-700 mb-2">Raison / Détails *</label>
+                  <input type="text" [(ngModel)]="debtReason" placeholder="Achat en attente de paiement"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-100 focus:border-red-500 transition-all" />
+                </div>
+
+                @if (debtAmount() && debtAmount()! > 0) {
+                <div class="bg-red-100 border-2 border-red-300 rounded-xl p-5">
+                  <p class="text-sm text-red-700 font-semibold mb-1">Nouveau solde prévu</p>
+                  <p class="text-3xl font-black text-red-800">
+                    {{ formatAmount(selectedUser()!.balance - debtAmount()!) }}
+                  </p>
+                </div>
+                }
+
+                <button (click)="addDebt()"
+                  [disabled]="isAddingDebt() || !debtAmount() || debtAmount()! <= 0 || !debtReason().trim()"
+                  class="w-full px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg">
+                  @if (isAddingDebt()) {
+                  <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+                  <span>Traitement...</span>
+                  } @else {
+                  <fa-icon [icon]="['fas', 'exclamation-triangle']"></fa-icon>
+                  <span>Confirmer l'Ajout de Dette</span>
+                  }
+                </button>
+              </div>
+            </div>
+            }
+
+            @if (activeTab() === 'update') {
+            <div class="border-2 border-purple-300 rounded-2xl p-6 sm:p-8 bg-purple-50/50 shadow-lg">
+              <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2 text-purple-700">
+                <fa-icon [icon]="['fas', 'sync-alt']"></fa-icon>
+                Ajustement Manuel du Solde
+              </h3>
+
+              <div class="bg-blue-100 border border-blue-400 rounded-xl p-4 mb-6">
+                <p class="text-sm text-blue-800 flex items-start gap-2">
+                  <fa-icon [icon]="['fas', 'lightbulb']" class="mt-1 shrink-0"></fa-icon>
+                  <span>Utilisez cette fonction avec précaution pour les corrections ou les remboursements externes qui
+                    nécessitent une **valeur finale** du solde.</span>
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-md font-extrabold text-gray-700 mb-2">Nouveau Solde (FCFA) *</label>
+                  <input type="number" [(ngModel)]="updateBalanceAmount" [step]="100"
+                    placeholder="Ex: 0 (après remboursement total)"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-500 text-xl font-bold transition-all" />
+                </div>
+
+                <div>
+                  <label class="block text-md font-extrabold text-gray-700 mb-2">Raison de l'Ajustement *</label>
+                  <input type="text" [(ngModel)]="updateBalanceReason" placeholder="Remboursement effectif de la dette"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-500 transition-all" />
+                </div>
+              </div>
+
+              @if (updateBalanceAmount() !== null) {
+              <div class="bg-purple-100 border-2 border-purple-300 rounded-xl p-5 mt-6">
+                <p class="text-sm text-purple-700 font-semibold mb-2">Résumé de l'Ajustement</p>
+                <div class="flex flex-col sm:flex-row items-center gap-4 justify-center">
+                  <span class="text-2xl font-black text-gray-700">
+                    Initial: {{ formatAmount(selectedUser()!.balance) }}
+                  </span>
+                  <fa-icon [icon]="['fas', 'arrow-right']" class="text-purple-600 text-3xl"></fa-icon>
+                  <span class="text-3xl font-black text-purple-700">
+                    Final: {{ formatAmount(updateBalanceAmount()!) }}
+                  </span>
+                </div>
+              </div>
+              }
+
+              <button (click)="updateBalance()" [disabled]="
+                isUpdatingBalance() ||
+                updateBalanceAmount() === null ||
+                !updateBalanceReason().trim()
+              "
+                class="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6 text-lg">
+                @if (isUpdatingBalance()) {
+                <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+                <span>Traitement...</span>
+                } @else {
+                <fa-icon [icon]="['fas', 'sync-alt']"></fa-icon>
+                <span>Appliquer l'Ajustement</span>
+                }
+              </button>
+            </div>
+            }
+          </div>
+
+          <button (click)="closeDepositModal()" [disabled]="isDepositing() || isUpdatingBalance() || isAddingDebt()"
+            class="w-full px-6 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-colors disabled:opacity-50 mt-8 text-lg">
+            <fa-icon [icon]="['fas', 'times']"></fa-icon>
+            Fermer la fenêtre de gestion
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>

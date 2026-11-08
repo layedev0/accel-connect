@@ -1,0 +1,354 @@
+<section class="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 md:py-12">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <button
+      type="button"
+      (click)="goBack()"
+      class="group inline-flex items-center gap-2 text-sm font-semibold text-[#303131]/70 hover:text-[#25509D] transition-colors"
+    >
+      <svg
+        class="w-4 h-4 transition-transform group-hover:-translate-x-0.5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Retour aux actualités
+    </button>
+
+    @if (loading()) {
+      <!-- Squelette de chargement -->
+      <div class="mt-8 animate-pulse" aria-hidden="true">
+        <div class="h-6 w-28 rounded-full bg-gray-200"></div>
+        <div class="mt-5 h-9 w-full rounded-lg bg-gray-200"></div>
+        <div class="mt-3 h-9 w-3/4 rounded-lg bg-gray-200"></div>
+        <div class="mt-5 h-4 w-40 rounded bg-gray-200"></div>
+        <div class="mt-8 aspect-[16/9] w-full rounded-2xl bg-gray-200"></div>
+        <div class="mt-8 space-y-3">
+          <div class="h-4 w-full rounded bg-gray-100"></div>
+          <div class="h-4 w-full rounded bg-gray-100"></div>
+          <div class="h-4 w-11/12 rounded bg-gray-100"></div>
+          <div class="h-4 w-2/3 rounded bg-gray-100"></div>
+        </div>
+      </div>
+      <p class="sr-only">Chargement de l'article…</p>
+    } @else if (notFound()) {
+      <!-- Article introuvable -->
+      <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+        <div
+          class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#E84141]/10 text-[#E84141]"
+        >
+          <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0l-7.1 12.25A2 2 0 004.99 19z"
+            />
+          </svg>
+        </div>
+        <h1 class="mt-4 text-xl font-black text-[#303131]">Article introuvable</h1>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-[#303131]/65">
+          Cet article n'est plus disponible ou n'a pas pu être chargé.
+        </p>
+        <button
+          type="button"
+          (click)="goBack()"
+          class="mt-6 inline-flex items-center justify-center rounded-xl bg-[#25509D] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#20264E]"
+        >
+          Retour aux actualités
+        </button>
+      </div>
+    } @else if (article(); as art) {
+      <article>
+        <!-- En-tête -->
+        <header class="mt-7">
+          <span
+            class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide"
+            [style.color]="art.categoryColor"
+            [style.background-color]="categoryTint(art)"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+            {{ art.category }}
+          </span>
+
+          <h1
+            class="mt-4 text-3xl font-black leading-[1.15] tracking-tight text-[#20264E] md:text-[2.6rem]"
+          >
+            {{ art.title }}
+          </h1>
+
+          <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-[#303131]/60">
+            @if (art.authorName) {
+              <span>Par <span class="font-semibold text-[#303131]/75">{{ art.authorName }}</span></span>
+              <span class="h-1 w-1 rounded-full bg-[#303131]/30" aria-hidden="true"></span>
+            }
+            @if (art.publishedDate) {
+              <span class="font-semibold text-[#303131]/75">{{ art.publishedDate }}</span>
+              <span class="h-1 w-1 rounded-full bg-[#303131]/30" aria-hidden="true"></span>
+            }
+            <span>{{ art.readTime }} de lecture</span>
+
+            <button
+              type="button"
+              (click)="sharePdf(art)"
+              class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-bold text-[#303131]/75 transition-colors hover:border-[#25509D] hover:text-[#25509D] sm:ml-auto"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                />
+              </svg>
+              Partager
+            </button>
+          </div>
+        </header>
+
+        <!-- Couverture (uniquement si l'article en a une) -->
+        @if (art.coverImage) {
+          <figure class="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100 shadow-sm">
+            <img
+              [src]="art.coverImage"
+              [alt]="art.title"
+              class="aspect-[16/9] w-full object-cover"
+              loading="lazy"
+            />
+          </figure>
+        }
+
+        <!-- Corps -->
+        <div class="mt-8">
+          <div
+            #articleBody
+            id="article-body"
+            class="relative overflow-hidden"
+            [style.max-height]="isCollapsible() && !expanded() ? '32rem' : null"
+          >
+            @for (paragraph of contentParagraphs(); track $index) {
+              <p
+                class="mb-5 leading-[1.8]"
+                [class]="$index === 0 ? 'text-lg text-[#303131]' : 'text-[1.0625rem] text-[#303131]/90'"
+              >
+                {{ paragraph }}
+              </p>
+            } @empty {
+              <p class="text-[1.0625rem] italic leading-[1.8] text-[#303131]/55">
+                Cet article n'a pas encore de contenu.
+              </p>
+            }
+
+            @if (isCollapsible() && !expanded()) {
+              <div
+                class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent"
+                aria-hidden="true"
+              ></div>
+            }
+          </div>
+
+          @if (isCollapsible()) {
+            <button
+              type="button"
+              (click)="toggleExpanded()"
+              [attr.aria-expanded]="expanded()"
+              aria-controls="article-body"
+              class="mt-5 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-[#25509D] transition-colors hover:border-[#25509D] hover:bg-[#25509D]/5"
+            >
+              {{ expanded() ? 'Voir moins' : 'Voir plus' }}
+              <svg
+                class="h-4 w-4 transition-transform"
+                [class.rotate-180]="expanded()"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          }
+        </div>
+      </article>
+
+      <!-- Galerie -->
+      @if (photosLoading()) {
+        <section class="mt-10">
+          <div class="h-6 w-24 animate-pulse rounded bg-gray-200"></div>
+          <div class="mt-4 grid aspect-[3/2] animate-pulse grid-cols-2 grid-rows-2 gap-3 sm:aspect-[2/1] sm:grid-cols-4">
+            <div class="col-span-2 row-span-2 rounded-xl bg-gray-200"></div>
+            <div class="rounded-xl bg-gray-100"></div>
+            <div class="rounded-xl bg-gray-100"></div>
+            <div class="rounded-xl bg-gray-100"></div>
+            <div class="rounded-xl bg-gray-100"></div>
+          </div>
+        </section>
+      } @else if (photos().length > 0) {
+        <section class="mt-10">
+          <h2 class="text-lg font-black text-[#20264E]">Photos</h2>
+          <div class="mt-4">
+            <app-article-gallery [photos]="photos()" />
+          </div>
+        </section>
+      }
+
+      <!-- Barre d'engagement -->
+      <div class="mt-10 flex flex-wrap items-center gap-3 border-t border-gray-200 pt-5">
+        <button
+          type="button"
+          (click)="toggleLike()"
+          [disabled]="likePending()"
+          [attr.aria-pressed]="likeStatus().likedByCurrentUser"
+          [class]="
+            likeStatus().likedByCurrentUser
+              ? 'border-[#E84141]/30 bg-[#E84141]/10 text-[#E84141]'
+              : 'border-gray-200 bg-white text-[#303131]/70 hover:border-[#E84141] hover:text-[#E84141]'
+          "
+          class="inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <svg
+            class="h-4 w-4"
+            [attr.fill]="likeStatus().likedByCurrentUser ? 'currentColor' : 'none'"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+          J'aime
+          <span class="tabular-nums">{{ likeStatus().likeCount }}</span>
+        </button>
+
+        <span class="text-sm text-[#303131]/60">
+          {{ comments().length }} {{ comments().length > 1 ? 'commentaires' : 'commentaire' }}
+        </span>
+      </div>
+
+      <!-- Fil de commentaires -->
+      <section class="mt-8">
+        <h2 class="text-lg font-black text-[#20264E]">Commentaires</h2>
+
+        <div class="mt-4">
+          <label for="comment-draft" class="sr-only">Écrire un commentaire</label>
+          <textarea
+            id="comment-draft"
+            rows="3"
+            maxlength="2000"
+            placeholder="Écrire un commentaire…"
+            [value]="draft()"
+            (input)="draft.set($any($event.target).value)"
+            class="w-full resize-none rounded-xl border border-[#E1E1E1] px-3.5 py-3 text-sm leading-6 text-[#303131] transition-colors placeholder:text-[#303131]/40 focus:border-[#25509D] focus:outline-none"
+          ></textarea>
+
+          <div class="mt-2 flex items-center justify-between gap-3">
+            <span class="text-xs tabular-nums text-[#303131]/45">{{ draft().length }} / 2000</span>
+            <button
+              type="button"
+              (click)="postComment()"
+              [disabled]="!draft().trim() || posting()"
+              class="inline-flex items-center justify-center rounded-xl bg-[#25509D] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#20264E] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#25509D]"
+            >
+              {{ posting() ? 'Publication…' : 'Publier' }}
+            </button>
+          </div>
+        </div>
+
+        @if (commentsLoading()) {
+          <div class="mt-6 space-y-4" aria-hidden="true">
+            @for (i of [1, 2]; track i) {
+              <div class="flex animate-pulse gap-3">
+                <div class="h-10 w-10 shrink-0 rounded-full bg-gray-200"></div>
+                <div class="flex-1 space-y-2 pt-1">
+                  <div class="h-3 w-40 rounded bg-gray-200"></div>
+                  <div class="h-3 w-full rounded bg-gray-100"></div>
+                  <div class="h-3 w-2/3 rounded bg-gray-100"></div>
+                </div>
+              </div>
+            }
+          </div>
+          <p class="sr-only">Chargement des commentaires…</p>
+        } @else {
+          <div id="comments-list" class="mt-6 space-y-5">
+            @for (comment of visibleComments(); track comment.id) {
+              <article class="flex gap-3">
+                <span
+                  class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#25509D] text-xs font-black text-white"
+                  aria-hidden="true"
+                >
+                  {{ comment.authorInitials }}
+                </span>
+
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-baseline gap-2">
+                    <span class="truncate text-sm font-bold text-[#303131]">{{ comment.authorName }}</span>
+                    <span class="shrink-0 text-xs text-[#303131]/50">{{ comment.when }}</span>
+
+                    @if (comment.canDelete) {
+                      <button
+                        type="button"
+                        (click)="confirmDeleteComment(comment)"
+                        title="Supprimer"
+                        aria-label="Supprimer ce commentaire"
+                        class="ml-auto shrink-0 rounded-lg p-1.5 text-[#303131]/40 transition-colors hover:bg-[#E84141]/10 hover:text-[#E84141]"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    }
+                  </div>
+
+                  <p class="mt-1 whitespace-pre-line text-sm leading-6 text-[#303131]/85">
+                    {{ comment.content }}
+                  </p>
+                </div>
+              </article>
+            } @empty {
+              <p class="text-sm text-[#303131]/55">Soyez le premier à réagir à cet article.</p>
+            }
+          </div>
+
+          @if (hiddenCommentCount() > 0) {
+            <button
+              type="button"
+              (click)="toggleComments()"
+              [attr.aria-expanded]="commentsExpanded()"
+              aria-controls="comments-list"
+              class="mt-5 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-[#25509D] transition-colors hover:border-[#25509D] hover:bg-[#25509D]/5"
+            >
+              @if (commentsExpanded()) {
+                Afficher moins de commentaires
+              } @else if (hiddenCommentCount() === 1) {
+                Afficher le commentaire précédent
+              } @else {
+                Afficher les {{ hiddenCommentCount() }} commentaires précédents
+              }
+              <svg
+                class="h-4 w-4 transition-transform"
+                [class.rotate-180]="commentsExpanded()"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          }
+        }
+      </section>
+    }
+  </div>
+</section>

@@ -1,0 +1,114 @@
+<div
+  class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+  [class.opacity-0]="!isVisible"
+  [class.opacity-100]="isVisible"
+  [class.pointer-events-none]="!isVisible"
+  style="transition: opacity 0.3s ease-in-out"
+>
+  <!-- Background avec effet de blur progressif - couleurs dynamiques -->
+  <div
+    class="absolute inset-0 bg-gradient-to-br from-[#0e1015] via-[#1a1f3a] to-[#20264e]"
+    [class.scale-100]="isVisible"
+    [class.scale-150]="!isVisible"
+    style="transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)"
+  ></div>
+
+  <!-- Particules animées en arrière-plan - couleur dynamique -->
+  <div class="absolute inset-0 opacity-30">
+    <div
+      class="absolute inset-0"
+      [style.background-image]="
+        'radial-gradient(circle, ' + theme.secondary + ' 1px, transparent 1px)'
+      "
+      style="background-size: 50px 50px; animation: particleMove 20s linear infinite"
+    ></div>
+  </div>
+
+  <!-- Cercles concentriques animés - couleurs dynamiques -->
+  <!-- <div class="absolute inset-0 flex items-center justify-center overflow-hidden">
+    <div
+      class="absolute w-[300px] h-[300px] rounded-full border-2 animate-ripple"
+      [style.border-color]="theme.secondary + '33'"
+    ></div>
+    <div
+      class="absolute w-[500px] h-[500px] rounded-full border-2 animate-ripple-delayed"
+      [style.border-color]="theme.primary + '33'"
+    ></div>
+    <div
+      class="absolute w-[700px] h-[700px] rounded-full border-2 animate-ripple-slow"
+      [style.border-color]="theme.secondary + '1a'"
+    ></div>
+  </div> -->
+
+  <!-- Container principal de l'animation -->
+  <div
+    class="relative z-10 flex flex-col items-center gap-8"
+    [class.scale-0]="!isVisible"
+    [class.scale-100]="isVisible"
+    [class.rotate-0]="isVisible"
+    [class.rotate-180]="!isVisible"
+    style="transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)"
+  >
+    <!-- Cadre décoratif autour de l'animation -->
+    <div class="relative group">
+      <!-- Glow effect animé - couleurs dynamiques -->
+      <div
+        class="absolute -inset-8 rounded-full blur-3xl animate-pulse-slow"
+        [style.background]="
+          'linear-gradient(to right, ' +
+          theme.primary +
+          '66, ' +
+          theme.secondary +
+          '66, ' +
+          theme.primary +
+          '66)'
+        "
+      ></div>
+
+      <!-- Cercle de fond avec glassmorphism -->
+      <div
+        class="relative bg-white/5 backdrop-blur-xl rounded-full p-8 border-2 border-white/10 shadow-2xl"
+      >
+        <div
+          class="absolute inset-0 rounded-full animate-spin-slow"
+          [style.background]="
+            'linear-gradient(to bottom right, ' + theme.primary + '1a, ' + theme.secondary + '1a)'
+          "
+        ></div>
+
+        <!-- Animation Lottie -->
+        <div
+          class="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] flex items-center justify-center"
+        >
+          <ng-lottie
+            [options]="lottieOptions"
+            (animationCreated)="onAnimationCreated($event)"
+            class="w-full h-full"
+          />
+        </div>
+      </div>
+
+      <!-- Points lumineux tournants - couleurs dynamiques -->
+      <div
+        class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full animate-orbit"
+        [style.background-color]="theme.secondary"
+        [style.box-shadow]="'0 10px 15px -3px ' + theme.secondary + '80'"
+      ></div>
+      <div
+        class="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 rounded-full animate-orbit-delayed"
+        [style.background-color]="theme.primary"
+        [style.box-shadow]="'0 10px 15px -3px ' + theme.primary + '80'"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Effet de scanline (style futuriste) - couleur dynamique -->
+  <div class="absolute inset-0 pointer-events-none opacity-10">
+    <div
+      class="w-full h-[2px] animate-scanline"
+      [style.background-image]="
+        'linear-gradient(to right, transparent, ' + theme.secondary + ', transparent)'
+      "
+    ></div>
+  </div>
+</div>
